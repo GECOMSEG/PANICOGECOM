@@ -41,7 +41,7 @@ if not lat or not lon:
     st.components.v1.html("""
     <div style="margin: 10px 0 20px 0;">
         <button onclick="capturarGPS()" style="width:100%; padding:20px; font-size:22px; background:#ff3333; color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold;">
-        📍 CLIQUE AQUI — ENVIAR LOCALIZAÇÃO
+        📍 LOCATION
         </button>
     </div>
     <script>
