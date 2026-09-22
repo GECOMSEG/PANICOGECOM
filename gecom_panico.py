@@ -28,40 +28,45 @@ if lat and lon:
     except:
         pass
 
-# === REMOVE CAIXAS E JANELAS EXTRAS ===
+# === TAMANHO FIXO DESDE O INÍCIO ===
 st.markdown("""
 <style>
-/* Remove caixa/borda do formulário */
+/* Sem borda, sem caixa, sem sombra no formulário */
 div[data-testid="stForm"] {
     border: none !important;
     box-shadow: none !important;
     padding: 0 !important;
 }
-/* Remove qualquer contêiner que sobreponha */
-div[data-testid="stVerticalBlock"] {
-    border: none !important;
-    box-shadow: none !important;
+/* TODOS os campos com tamanho certo — desde o início */
+div[data-testid="stTextInput"] > div {
+    margin-bottom: 8px !important;
 }
-/* Campos todos iguais e largos */
 div[data-testid="stTextInput"] > div > input {
     font-size: 18px !important;
-    padding: 14px 16px !important;
+    padding: 16px !important;
     border-radius: 10px !important;
-    height: 52px !important;
+    height: 56px !important;
     border: 1px solid #ddd !important;
+    min-width: 100% !important;
+}
+/* Latitude e Longitude lado a lado — mesmo tamanho */
+div[data-testid="column"] {
+    padding: 0 5px !important;
 }
 div[data-testid="stTextArea"] > div > textarea {
     font-size: 18px !important;
-    padding: 14px 16px !important;
+    padding: 16px !important;
     border-radius: 10px !important;
-    min-height: 120px !important;
+    min-height: 140px !important;
     border: 1px solid #ddd !important;
 }
 button[kind="primary"] {
-    font-size: 18px !important;
-    padding: 14px !important;
-    height: 56px !important;
-    margin-top: 10px !important;
+    font-size: 20px !important;
+    padding: 16px !important;
+    height: auto !important;
+    margin: 15px 0 !important;
+    background-color: #ff5500 !important;
+    border: none !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -92,7 +97,7 @@ if not lat or not lon:
     """
     st.components.v1.html(html_botao, height=160)
 
-# === FORMULÁRIO SEM CAIXA EXTERNA ===
+# === FORMULÁRIO — TAMANHO GRANDE DESDE O INÍCIO ===
 with st.form("alerta", border=False):
     nome = st.text_input("👤 Seu Nome / Razão Social")
     
@@ -103,7 +108,7 @@ with st.form("alerta", border=False):
         lon = st.text_input("📍 Longitude", value=lon)
     
     endereco = st.text_input("🏠 Endereço Completo", value=endereco_auto)
-    obs = st.text_area("📝 O que está acontecendo?", height=120)
+    obs = st.text_area("📝 O que está acontecendo?", height=140)
     
     enviar = st.form_submit_button("🚨 ENVIAR ALERTA", type="primary", use_container_width=True)
 
@@ -133,4 +138,3 @@ if enviar:
             st.error(f"❌ Erro {resp.status_code}")
 
 st.caption("GECOM Segurança · Emergência: 190")
-        
