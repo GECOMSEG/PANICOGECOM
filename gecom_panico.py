@@ -28,29 +28,40 @@ if lat and lon:
     except:
         pass
 
-# === TAMANHOS IGUAIS PARA TODOS OS CAMPOS ===
+# === REMOVE CAIXAS E JANELAS EXTRAS ===
 st.markdown("""
 <style>
+/* Remove caixa/borda do formulário */
+div[data-testid="stForm"] {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+/* Remove qualquer contêiner que sobreponha */
+div[data-testid="stVerticalBlock"] {
+    border: none !important;
+    box-shadow: none !important;
+}
+/* Campos todos iguais e largos */
 div[data-testid="stTextInput"] > div > input {
     font-size: 18px !important;
     padding: 14px 16px !important;
     border-radius: 10px !important;
     height: 52px !important;
+    border: 1px solid #ddd !important;
 }
 div[data-testid="stTextArea"] > div > textarea {
     font-size: 18px !important;
     padding: 14px 16px !important;
     border-radius: 10px !important;
     min-height: 120px !important;
+    border: 1px solid #ddd !important;
 }
 button[kind="primary"] {
     font-size: 18px !important;
     padding: 14px !important;
     height: 56px !important;
-}
-/* Garante mesma largura */
-div[data-testid="stVerticalBlock"] > div {
-    width: 100% !important;
+    margin-top: 10px !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -64,7 +75,7 @@ st.markdown("""
 # === BOTÃO GPS ===
 if not lat or not lon:
     html_botao = """
-    <button onclick="capturarGPS()" style="width:100%; padding:18px; font-size:20px; background:#ff3333; color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold; margin-bottom:20px;">
+    <button onclick="capturarGPS()" style="width:100%; padding:18px; font-size:20px; background:#ff3333; color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold; margin-bottom:25px;">
     📍 CAPTURAR MINHA LOCALIZAÇÃO
     </button>
     <script>
@@ -81,8 +92,8 @@ if not lat or not lon:
     """
     st.components.v1.html(html_botao, height=160)
 
-# === FORMULÁRIO — TAMANHOS IGUAIS ===
-with st.form("alerta"):
+# === FORMULÁRIO SEM CAIXA EXTERNA ===
+with st.form("alerta", border=False):
     nome = st.text_input("👤 Seu Nome / Razão Social")
     
     col1, col2 = st.columns(2)
@@ -96,7 +107,7 @@ with st.form("alerta"):
     
     enviar = st.form_submit_button("🚨 ENVIAR ALERTA", type="primary", use_container_width=True)
 
-# === ENVIO ===
+# === RESULTADO ===
 if enviar:
     if not nome:
         st.error("❌ Digite seu nome!")
@@ -122,3 +133,4 @@ if enviar:
             st.error(f"❌ Erro {resp.status_code}")
 
 st.caption("GECOM Segurança · Emergência: 190")
+        
