@@ -20,7 +20,7 @@ st.divider()
 
 # === DADOS DO SEU PROJETO ===
 API_URL = "https://hbyqdrewpzjupzyukyts.supabase.co/rest/v1/alertas"
-CHAVE = "sb_publishable_t21VYcgneOXD9JPW5GcnQ_BisRaVZS"
+CHAVE = "sb_publishable_t2iYYcgneXOXD9JPW5GcnQ_BisRaVZS"
 # =============================
 
 headers = {
