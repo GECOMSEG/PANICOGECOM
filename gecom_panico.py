@@ -20,7 +20,7 @@ headers = {
 
 # === TELA CHEIA — SEM ELEMENTOS EXTRAS ===
 st.components.v1.html("""
-<meta name="theme-color" content="#ff0000">
+<meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
