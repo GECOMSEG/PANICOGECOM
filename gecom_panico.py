@@ -1,16 +1,13 @@
-"
 import streamlit as st
 from supabase import create_client, Client
 from datetime import datetime
 
-# DADOS DO SUPABASE
 SUPABASE_URL = "https://hbyqdrewpztjupyulyts.supabase.co"
-SUPABASE_KEY = "sb_publishable_t2iYYcgneXOXD9JPW5GcnQ_BisRaVZS
-# CONEXÃO
+SUPABASE_KEY = "sb_publishable_t21VYcgneOXD93PW5GcnQ_BisRaVZS"
+
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# CONFIGURAÇÃO DA PÁGINA
-st.set_page_config(page_title="GECOM — Alerta de Pânico", page_icon="🚨", layout="centered")
+st.set_page_config(page_title="GECOM Alerta Panico", page_icon="🚨", layout="centered")
 
 st.markdown("""
 <style>
@@ -19,21 +16,19 @@ div.stButton > button {background-color: #cc0000; color: white; font-size: 22px;
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🚨 ALERTA DE PÂNICO — GECOM SEGURANÇA")
-st.subheader("Proteção Máxima")
+st.title("🚨 ALERTA DE PANICO — GECOM SEGURANCA")
+st.subheader("Protecao Maxima")
 st.divider()
 
-# FORMULÁRIO
-nome = st.text_input("Seu Nome / Identificação")
+nome = st.text_input("Seu Nome / Identificacao")
 col1, col2 = st.columns(2)
 with col1:
     lat = st.text_input("Latitude")
 with col2:
     lon = st.text_input("Longitude")
-endereco = st.text_input("Endereço / Referência")
-obs = st.text_area("Observações")
+endereco = st.text_input("Endereco / Referencia")
+obs = st.text_area("Observacoes")
 
-# BOTÃO DE ENVIO
 if st.button("🚨 ENVIAR ALERTA AGORA", type="primary"):
     if not nome:
         st.error("⚠️ Digite seu nome!")
@@ -41,7 +36,6 @@ if st.button("🚨 ENVIAR ALERTA AGORA", type="primary"):
         hora_atual = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
         mapa_link = f"https://www.google.com/maps/search/?api=1&query={lat},{lon}" if lat and lon else ""
         
-        # SALVAR NO BANCO
         dados = {
             "nome": nome,
             "hora": hora_atual,
@@ -52,17 +46,12 @@ if st.button("🚨 ENVIAR ALERTA AGORA", type="primary"):
             "mapa": mapa_link
         }
         
-        resposta = supabase.table("alertas").insert(dados).execute()
+        supabase.table("alertas").insert(dados).execute()
         
         st.success("✅ ALERTA ENVIADO PARA A CENTRAL!")
-        st.info(f"""
-        📋 **Dados enviados:**
-        - Nome: {nome}
-        - Hora: {hora_atual}
-        - Endereço: {endereco or "Não informado"}
-        """)
+        st.info(f"Nome: {nome}\nHora: {hora_atual}\nEndereco: {endereco or 'Nao informado'}")
         if mapa_link:
             st.markdown(f"[📍 Ver no Mapa]({mapa_link})")
 
 st.divider()
-st.caption("GECOM Segurança — Proteção Máxima · Emergência: 190")
+st.caption("GECOM Seguranca — Protecao Maxima · Emergencia: 190")
