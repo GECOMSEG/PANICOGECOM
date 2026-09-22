@@ -3,7 +3,7 @@ from supabase import create_client, Client
 from datetime import datetime
 
 # === DADOS DO SEU PROJETO ===
-SUPABASE_URL = "https://hbyqdrewpztjupyulyts.supabase.co"
+SUPABASE_URL = "https://hbyqdrewpzjupzyulyts.supabase.co"
 SUPABASE_KEY = "sb_publishable_t21VYcgneOXD93PW5GcnQ_BisRaVZS"
 # ============================
 
