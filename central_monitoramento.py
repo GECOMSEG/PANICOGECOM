@@ -20,7 +20,7 @@ st.divider()
 
 # === TUDO CERTO — NÃO ALTERAR AS ASPAS ===
 API_URL = "https://hbyqdrewpzjupzyukyts.supabase.co/rest/v1/alertas"
-CHAVE = "sb_secret_OEuaVz5qhPKtnAAxZMpDtQ_IgafD-_d"
+CHAVE = "sb_publishable_t2iYYcgneXOXD9JPW5GcnQ_BisRaVZS"
 # =========================================
 
 headers = {
