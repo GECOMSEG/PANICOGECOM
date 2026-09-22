@@ -18,10 +18,10 @@ st.title("🚨 CENTRAL DE MONITORAMENTO — GECOM SEGURANÇA")
 st.subheader("Proteção Máxima · Campo Bom / RS")
 st.divider()
 
-# === DADOS DO SEU PROJETO ===
-API_URL = "https://hbyqdrewpzjupzyukyts.supabase.co/rest/v1/alertas"
-CHAVE = "sb_publishable_t2iYYcgneXOXD9JPW5GcnQ_BisRaVZS"
-# =============================
+# === URL CERTA DO SEU PROJETO ===
+API_URL = "https://hbyqdwepwzpjupzyukyts.supabase.co/rest/v1/alertas"
+CHAVE = "https://hbyqdwepwzpjupzyukyts.supabase.co/rest/v1/alertas"
+# ================================
 
 headers = {
     "apikey": CHAVE,
@@ -45,11 +45,9 @@ try:
         
         if not alertas:
             st.warning("⚠️ Conectado! Nenhum alerta registrado ainda.")
-            st.info("👉 Envie um alerta pelo App e clique em Atualizar!")
         else:
             st.success(f"✅ {len(alertas)} Alerta(s) Recebido(s)!")
             for a in alertas:
-                # Nomes EXATOS das colunas do seu banco
                 nome = a.get("nome") or "Não informado"
                 hora = a.get("hora") or "—"
                 endereco = a.get("endereço") or "Não informado"
@@ -79,7 +77,7 @@ try:
         st.error(f"❌ Erro {resp.status_code}: {resp.text}")
 
 except Exception as e:
-    st.error(f"❌ Falha de conexão: {str(e)}")
+    st.error(f"❌ Falha: {str(e)}")
 
 st.caption("GECOM Segurança — Proteção Máxima · Emergência: 190")
-                
+
