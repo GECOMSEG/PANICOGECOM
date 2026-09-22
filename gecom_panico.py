@@ -2,36 +2,34 @@ import streamlit as st
 from datetime import datetime
 
 # =============================================
-# SISTEMA DE PÂNICO GECOM — CLIENTE + CENTRAL
+# GECOM — SISTEMA DE PÂNICO: CLIENTE + CENTRAL
 # =============================================
 
-st.set_page_config(page_title="GECOM — Pânico", layout="wide")
+st.set_page_config(page_title="GECOM Pânico", layout="wide")
 
-# 🔐 ÁREA DE DADOS COMPARTILHADOS
-# Usamos a sessão para guardar os alertas
+# Armazena alertas
 if "alertas" not in st.session_state:
     st.session_state.alertas = []
 
-# ========== ESCOLHA DE TELA ==========
-tela = st.sidebar.radio("Selecionar Tela:", [
-    "📲 Cliente — Botão de Pânico",
-    "📟 Central — Monitoramento"
+# ========== MENU LATERAL ==========
+pagina = st.sidebar.radio("Acesso:", [
+    "📲 Cliente — Enviar Alerta",
+    "📟 Central — Receber Alertas"
 ])
 
 # ========== TELA DO CLIENTE ==========
-if tela == "📲 Cliente — Botão de Pânico":
-    
+if pagina == "📲 Cliente — Enviar Alerta":
     st.markdown("""
         <h1 style='text-align:center;color:red;'>🚨 BOTÃO DE PÂNICO</h1>
         <h3 style='text-align:center;'>GECOM SEGURANÇA</h3>
         <hr style='border:2px solid red;'>
     """, unsafe_allow_html=True)
 
-    nome_cliente = st.text_input("👤 Seu Nome / Empresa")
+    nome = st.text_input("👤 Seu Nome / Razão Social")
     lat = st.text_input("📍 Latitude")
     lon = st.text_input("📍 Longitude")
 
-    # Pegar localização automática
+    # Pega localização automática
     st.components.v1.html("""
     <script>
     if(navigator.geolocation){
@@ -46,81 +44,65 @@ if tela == "📲 Cliente — Botão de Pânico":
     </script>
     """, height=0)
 
-    endereco = st.text_input("🏠 Endereço / Referência")
-    descricao = st.text_area("📝 Situação", placeholder="Descreva o que está acontecendo...")
+    endereco = st.text_input("🏠 Endereço / Ponto de Referência")
+    obs = st.text_area("📝 Descrição da Situação", placeholder="O que está acontecendo?")
 
     st.divider()
 
-    if st.button("🚨 PEDIR SOCORRO — URGENTE", type="primary", use_container_width=True):
-        if not nome_cliente:
+    if st.button("🚨 PEDIR SOCORRO AGORA", type="primary", use_container_width=True):
+        if not nome:
             st.error("⚠️ Digite seu nome!")
         else:
             agora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
             tem_local = lat and lon and lat.strip() and lon.strip()
             
-            novo_alerta = {
-                "nome": nome_cliente,
-                "data": agora,
+            alerta = {
+                "nome": nome,
+                "hora": agora,
                 "lat": lat if tem_local else "Não disponível",
                 "lon": lon if tem_local else "Não disponível",
                 "endereco": endereco or "Não informado",
-                "descricao": descricao or "Não informada",
+                "obs": obs or "Não informada",
                 "mapa": f"https://www.google.com/maps?q={lat},{lon}" if tem_local else None
             }
             
-            # Adiciona na lista (aparece na Central)
-            st.session_state.alertas.insert(0, novo_alerta)
-            
+            st.session_state.alertas.insert(0, alerta)
             st.success("✅ ALERTA ENVIADO PARA A CENTRAL!")
             st.balloons()
-            
-            st.markdown(f"""
-            <div style='background:#ffebee;padding:15px;border-radius:10px;border:2px solid red;'>
-            <h3>📤 Mensagem enviada:</h3>
-            <p><strong>De:</strong> {nome_cliente}</p>
-            <p><strong>Hora:</strong> {agora}</p>
-            <p><strong>Local:</strong> {endereco or 'Ver mapa'}</p>
-            </div>
-            """, unsafe_allow_html=True)
-
-    st.info("💡 Salve este link na tela inicial do celular! Permita a localização!")
 
 # ========== TELA DA CENTRAL ==========
 else:
     st.markdown("""
-        <h1 style='text-align:center;color:#2E7D32;'>📟 CENTRAL DE MONITORAMENTO</h1>
-        <h3 style='text-align:center;'>GECOM SEGURANÇA — ALERTAS DE PÂNICO</h3>
+        <h1 style='text-align:center;color:green;'>📟 CENTRAL DE MONITORAMENTO</h1>
+        <h3 style='text-align:center;'>GECOM SEGURANÇA — ALERTAS RECEBIDOS</h3>
         <hr style='border:2px solid green;'>
     """, unsafe_allow_html=True)
 
-    # Atualização automática
+    # Atualiza a página para mostrar novos alertas
     st.rerun()
 
     if not st.session_state.alertas:
-        st.info("✅ Nenhum alerta recebido — Sistema operacional")
+        st.info("✅ Sistema online — Nenhum alerta recebido no momento")
     else:
-        total = len(st.session_state.alertas)
-        st.warning(f"⚠️ {total} ALERTA(S) RECEBIDO(S)!")
+        st.warning(f"⚠️ {len(st.session_state.alertas)} ALERTA(S) RECEBIDO(S)!")
         
-        for idx, alerta in enumerate(st.session_state.alertas):
-            with st.container():
-                st.markdown(f"""
-                <div style='background:#fff3cd;padding:15px;border-radius:8px;border-left:5px solid orange;'>
-                <h4>🚨 ALERTA #{idx+1}</h4>
-                <p><strong>👤 Cliente:</strong> {alerta['nome']}</p>
-                <p><strong>🕐 Hora:</strong> {alerta['data']}</p>
-                <p><strong>🏠 Endereço:</strong> {alerta['endereco']}</p>
-                <p><strong>📍 Coordenadas:</strong> {alerta['lat']} / {alerta['lon']}</p>
-                <p><strong>📝 Situação:</strong> {alerta['descricao']}</p>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                if alerta['mapa']:
-                    st.markdown(f"[🗺️ ABRIR MAPA → {alerta['nome']}]({alerta['mapa']})")
-                
-                st.divider()
+        for num, a in enumerate(st.session_state.alertas, 1):
+            st.markdown(f"""
+            <div style='background:#fff3cd;padding:15px;border-radius:8px;border-left:5px solid red;'>
+            <h4>🚨 ALERTA #{num}</h4>
+            <p><strong>Cliente:</strong> {a['nome']}</p>
+            <p><strong>Hora:</strong> {a['hora']}</p>
+            <p><strong>Endereço:</strong> {a['endereco']}</p>
+            <p><strong>Coordenadas:</strong> {a['lat']} / {a['lon']}</p>
+            <p><strong>Observação:</strong> {a['obs']}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            if a['mapa']:
+                st.markdown(f"[🗺️ ABRIR MAPA → {a['nome']}]({a['mapa']})")
+            st.divider()
 
-    if st.button("🗑️ Limpar Alertas"):
+    if st.button("🗑️ Limpar Todos os Alertas"):
         st.session_state.alertas = []
         st.rerun()
-  
+            
