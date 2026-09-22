@@ -1,2 +1,2 @@
 SUPABASE_URL = "https://hbyqdrewpztjupyulyts.supabase.co"
-SUPABASE_KEY = "COLE_AQUI_A_CHAVE_ANON_PUBLIC"
+SUPABASE_KEY = "sb_publishable_t2iYYcgneXOXD9JPW5GcnQ_BisRaVZS"
