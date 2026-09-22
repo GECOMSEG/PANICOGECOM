@@ -7,7 +7,7 @@ st.set_page_config(page_title="GECOM — Emergência", page_icon="🚨", layout=
 
 # === CONFIGURAÇÃO ===
 API_URL = "https://hbyqdrewpzjupzyukyts.supabase.co/rest/v1/alertas"
-CHAVE = "COLA_A_PUBLISHABLE_KEY_AQUI"
+CHAVE = "sb_publishable_t2iYYcgneXOXD9JPW5GcnQ_BisRaVZS"
 # =====================
 
 headers = {
