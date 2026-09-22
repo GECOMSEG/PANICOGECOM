@@ -2,18 +2,18 @@ import streamlit as st
 from supabase import create_client, Client
 from datetime import datetime
 
-# === COLOQUE SEUS DADOS AQUI ===
+# === DADOS DO SEU PROJETO ===
 SUPABASE_URL = "https://hbyqdrewpztjupyulyts.supabase.co"
-SUPABASE_KEY = "COLE_AQUI_A_CHAVE_QUE_COMEÇA_COM_eyJ"
-# ===============================
+SUPABASE_KEY = "sb_publishable_t21VYcgneOXD93PW5GcnQ_BisRaVZS"
+# ============================
+
+st.set_page_config(page_title="GECOM Alerta Panico", page_icon="🚨", layout="centered")
 
 try:
-    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 except Exception as e:
     st.error(f"Erro de conexao: {e}")
     st.stop()
-
-st.set_page_config(page_title="GECOM Alerta Panico", page_icon="🚨", layout="centered")
 
 st.markdown("""
 <style>
@@ -53,7 +53,7 @@ if st.button("🚨 ENVIAR ALERTA AGORA", type="primary"):
                 "mapa": mapa_link
             }
             
-            resposta = supabase.table("alertas").insert(dados).execute()
+            supabase.table("alertas").insert(dados).execute()
             
         st.success("✅ ALERTA ENVIADO PARA A CENTRAL!")
         st.info(f"Nome: {nome}\nHora: {hora_atual}\nEndereco: {endereco or 'Nao informado'}")
