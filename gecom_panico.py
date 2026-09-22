@@ -30,7 +30,7 @@ if lat and lon:
 
 # === TÍTULO ===
 st.markdown("<h1 style='text-align: center;'>🚨 GECOM SEGURANÇA</h1>", unsafe_allow_html=True)
-st.markdown("<h4 style='text-align: center; color: #555;'>Proteção Máxima · Campo Bom / RS</h4>", unsafe_allow_html=True)
+st.markdown("<h4 style='text-align: center; color: #555;'>Proteção Máxima · ARARICA / RS</h4>", unsafe_allow_html=True)
 st.divider()
 
 # === BOTÃO DE LOCALIZAÇÃO — AGORA APARECENDO CERTINHO ===
@@ -55,10 +55,8 @@ if not lat or not lon:
         );
     }
     </script>
-    """, height=130)
+    """, height=60)
     
-    st.info("Após permitir, a página recarrega e preenche tudo sozinho ✅")
-    st.divider()
 
 # === FORMULÁRIO ===
 nome = st.text_input("👤 Seu Nome / Razão Social")
