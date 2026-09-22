@@ -15,28 +15,38 @@ headers = {
     "Content-Type": "application/json"
 }
 
+# Inicializa valores na sessão
+if "lat" not in st.session_state:
+    st.session_state.lat = ""
+if "lon" not in st.session_state:
+    st.session_state.lon = ""
+
+# Pega da URL se veio
+lat_url = st.query_params.get("lat", "")
+lon_url = st.query_params.get("lon", "")
+if lat_url and lon_url:
+    st.session_state.lat = lat_url
+    st.session_state.lon = lon_url
+
 st.title("🚨 GECOM SEGURANÇA — Emergência")
 st.subheader("Proteção Máxima · Campo Bom / RS")
 st.divider()
 
-# === PEGA VALORES DA URL ===
-lat = st.query_params.get("lat", "")
-lon = st.query_params.get("lon", "")
-
-# Se NÃO tem coordenadas → mostra botão para capturar
-if not lat or not lon:
-    st.info("📍 Clique no botão abaixo para capturar sua localização:")
+# Se JÁ tem coordenadas → mostra formulário
+if st.session_state.lat and st.session_state.lon:
+    st.success("✅ Localização capturada!")
+else:
+    st.info("📍 Clique no botão abaixo:")
     
     st.components.v1.html("""
 <button onclick="pegarGPS()" style="width:100%; padding:15px; font-size:18px; background:#ff3333; color:white; border:none; border-radius:10px; cursor:pointer;">
 📌 CAPTURAR MINHA LOCALIZAÇÃO
 </button>
-<br>
-<p id="aviso" style="color:gray;"></p>
+<p id="status" style="margin-top:10px;"></p>
 
 <script>
 function pegarGPS() {
-    document.getElementById("aviso").innerText = "🔄 Buscando sinal GPS...";
+    document.getElementById("status").innerText = "🔄 Buscando...";
     navigator.geolocation.getCurrentPosition(
         function(pos) {
             const url = new URL(window.location.href);
@@ -45,36 +55,32 @@ function pegarGPS() {
             window.location.href = url.toString();
         },
         function(erro) {
-            document.getElementById("aviso").innerText = 
-                "⚠️ Permita a localização ou preencha manualmente abaixo.";
+            document.getElementById("status").innerText = 
+                "⚠️ Permita a localização ou preencha abaixo.";
         },
-        {enableHighAccuracy: true, timeout: 10000}
+        {enableHighAccuracy: true, timeout: 15000}
     );
 }
 </script>
-""", height=180)
-    
-    st.stop()  # Espera o usuário capturar
+""", height=160)
 
-# ✅ TEM COORDENADAS — MOSTRA FORMULÁRIO COMPLETO
-st.success("✅ Localização capturada com sucesso!")
+# === FORMULÁRIO SEMPRE VISÍVEL ===
 st.divider()
-
 with st.form("form_emergencia"):
     nome = st.text_input("👤 Seu Nome / Razão Social")
     
     col1, col2 = st.columns(2)
     with col1:
-        lat = st.text_input("📍 Latitude", value=lat)
+        lat = st.text_input("📍 Latitude", value=st.session_state.lat)
     with col2:
-        lon = st.text_input("📍 Longitude", value=lon)
+        lon = st.text_input("📍 Longitude", value=st.session_state.lon)
     
     endereco = st.text_input("🏠 Endereço Completo")
     obs = st.text_area("📝 O que está acontecendo?")
     
     enviar = st.form_submit_button("🚨 ENVIAR ALERTA", type="primary", use_container_width=True)
 
-# === ENVIA PARA A CENTRAL ===
+# === ENVIO ===
 if enviar:
     if not nome:
         st.error("❌ Digite seu nome!")
@@ -86,7 +92,7 @@ if enviar:
             "lat": lat,
             "lon": lon,
             "obs": obs,
-            "mapa": f"https://www.google.com/maps/search/?api=1&query={lat},{lon}"
+            "mapa": f"https://www.google.com/maps/search/?api=1&query={lat},{lon}" if lat and lon else ""
         }
         
         resp = requests.post(API_URL, json=dados, headers=headers)
@@ -94,8 +100,11 @@ if enviar:
         if resp.status_code in [200, 201]:
             st.success("✅ ALERTA ENVIADO PARA A CENTRAL!")
             st.balloons()
-            # Link do mapa
-            st.markdown(f"🔗 [Ver no Google Maps]({dados['mapa']})")
+            if lat and lon:
+                st.markdown(f"🔗 [Ver no Mapa]({dados['mapa']})")
+            # Limpa para novo uso
+            st.session_state.lat = ""
+            st.session_state.lon = ""
         else:
             st.error(f"❌ Erro {resp.status_code}: {resp.text}")
 
