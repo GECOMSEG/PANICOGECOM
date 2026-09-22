@@ -1,18 +1,13 @@
 import streamlit as st
-from supabase import create_client
+import requests
 from datetime import datetime
 
-# DADOS CORRETOS
-SUPABASE_URL = "https://hbyqdrewpzjupzyukyts.supabase.co"
-SUPABASE_KEY = "sb_publishable_t21VYcgneOXD93PW5GcnQ_BisRaVZS"
+# === DADOS DO SEU PROJETO ===
+API_URL = "https://hbyqdrewpzjupzyukyts.supabase.co/rest/v1/alertas"
+CHAVE = "sb_publishable_t21VYcgneOXD93PW5GcnQ_BisRaVZS"
+# =============================
 
 st.set_page_config(page_title="GECOM Alerta Panico", page_icon="🚨", layout="centered")
-
-try:
-    supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-except Exception as e:
-    st.error(f"Erro de conexao: {e}")
-    st.stop()
 
 st.markdown("""
 <style>
@@ -45,19 +40,29 @@ if st.button("🚨 ENVIAR ALERTA AGORA", type="primary"):
             dados = {
                 "nome": nome,
                 "hora": hora_atual,
-                "lat": lat or "",
-                "lon": lon or "",
-                "endereco": endereco or "",
-                "obs": obs or "",
-                "mapa": mapa_link or ""
+                "lat": lat,
+                "lon": lon,
+                "endereco": endereco,
+                "obs": obs,
+                "mapa": mapa_link
             }
             
-            supabase.table("alertas").insert(dados).execute()
-        
-        st.success("✅ ALERTA ENVIADO PARA A CENTRAL!")
-        st.info(f"Nome: {nome}\nHora: {hora_atual}\nEndereco: {endereco or 'Nao informado'}")
-        if mapa_link:
-            st.markdown(f"[📍 Ver no Mapa]({mapa_link})")
+            cabecalhos = {
+                "apikey": CHAVE,
+                "Authorization": f"Bearer {CHAVE}",
+                "Content-Type": "application/json",
+                "Prefer": "return=minimal"
+            }
+            
+            resp = requests.post(API_URL, json=dados, headers=cabecalhos)
+            
+            if resp.status_code in (200, 201):
+                st.success("✅ ALERTA ENVIADO PARA A CENTRAL!")
+                st.info(f"Nome: {nome}\nHora: {hora_atual}\nEndereco: {endereco or 'Nao informado'}")
+                if mapa_link:
+                    st.markdown(f"[📍 Ver no Mapa]({mapa_link})")
+            else:
+                st.error(f"❌ Erro {resp.status_code}: {resp.text}")
 
 st.divider()
 st.caption("GECOM Seguranca — Protecao Maxima · Emergencia: 190")
