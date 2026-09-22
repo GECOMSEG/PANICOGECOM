@@ -75,22 +75,6 @@ function capturarGPS() {
     );
 }
 </script>
-""", height=160)
-
-# === FORMULÁRIO — SEMPRE APARECE, SEM NADA EXTRA ===
-with st.form("alerta"):
-    nome = st.text_input("👤 Seu Nome / Razão Social")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        lat = st.text_input("📍 Latitude", value=lat)
-    with col2:
-        lon = st.text_input("📍 Longitude", value=lon)
-    
-    endereco = st.text_input("🏠 Endereço Completo", value=endereco_auto)
-    obs = st.text_area("📝 O que está acontecendo?", height=150)
-    
-    enviar = st.form_submit_button("🚨 ENVIAR ALERTA", type="primary", use_container_width=True)
 
 
 st.caption("GECOM Segurança · Emergência: 190")
