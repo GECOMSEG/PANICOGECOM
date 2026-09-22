@@ -25,23 +25,24 @@ if lat and lon:
         with urllib.request.urlopen(req, timeout=5) as resp:
             dados = json.loads(resp.read().decode())
             endereco_auto = dados.get("display_name", "")
-    except:
-        pass
+    except Exception as e:
+        endereco_auto = ""
 
-# === TÍTULO ===
-st.markdown("<h1 style='text-align: center;color: #FF0000'>GECOM SEGURANÇA</h1>", unsafe_allow_html=True)
-st.markdown("<h4 style='text-align: center; color: #FFFFF0;'>Proteção Máxima · ARARICA/ RS</h4>", unsafe_allow_html=True)
+# === TÍTULO CORRIGIDO ===
+st.markdown("""
+<h1 style='text-align: center; color: #d32f2f; margin-bottom: 5px;'>🚨 GECOM SEGURANÇA</h1>
+<h4 style='text-align: center; color: #555; margin-top: 0; margin-bottom: 20px;'>Proteção Máxima · Ararica / RS</h4>
+""", unsafe_allow_html=True)
 st.divider()
 
-# === BOTÃO DE LOCALIZAÇÃO — AGORA APARECENDO CERTINHO ===
+# === BOTÃO DE LOCALIZAÇÃO — APARECENDO CERTINHO ===
 if not lat or not lon:
     st.markdown("<h3>📍 Capturar Localização</h3>", unsafe_allow_html=True)
     
-    # BOTÃO GRANDE E VERMELHO VISÍVEL
     st.components.v1.html("""
     <div style="margin: 10px 0 20px 0;">
         <button onclick="capturarGPS()" style="width:100%; padding:20px; font-size:22px; background:#ff3333; color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold;">
-        📍 LOCATION
+        📍 CAPTURAR MINHA LOCALIZAÇÃO
         </button>
     </div>
     <script>
@@ -50,13 +51,20 @@ if not lat or not lon:
             function(sucesso) {
                 window.location.href = window.location.origin + window.location.pathname + "?lat=" + sucesso.coords.latitude + "&lon=" + sucesso.coords.longitude;
             },
-            function(erro) { alert("⚠️ Permita o acesso à localização nas configurações!"); },
+            function(erro) { 
+                alert("⚠️ Permita a localização: clique no 🔒 cadeado acima → Configurações → Permitir Localização"); 
+            },
             {enableHighAccuracy: true, timeout: 15000}
         );
     }
     </script>
-    """, height=500)
+    """, height=140)
     
+    st.info("Após permitir, a página recarrega e preenche tudo sozinho ✅")
+    st.divider()
+else:
+    st.success("✅ Localização capturada! Campos preenchidos:")
+    st.divider()
 
 # === FORMULÁRIO ===
 nome = st.text_input("👤 Seu Nome / Razão Social")
@@ -77,6 +85,9 @@ if enviar:
     if not nome:
         st.error("❌ Digite seu nome!")
     else:
+        if not lat or not lon:
+            st.warning("⚠️ Localização vazia — preencha ou clique em CAPTURAR")
+        
         dados = {
             "nome": nome,
             "hora": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
@@ -93,9 +104,8 @@ if enviar:
             st.success("✅ ALERTA ENVIADO PARA A CENTRAL!")
             st.balloons()
             if lat and lon:
-                st.markdown(f"🔗 [Ver no Mapa]({dados['mapa']})")
+                st.markdown(f"🔗 [Ver localização no Mapa]({dados['mapa']})")
         else:
-            st.error(f"❌ Erro {resp.status_code}")
+            st.error(f"❌ Erro {resp.status_code} — verifique a chave de API")
 
 st.caption("GECOM Segurança · Emergência: 190")
-            
