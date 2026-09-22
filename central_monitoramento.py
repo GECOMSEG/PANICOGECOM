@@ -20,7 +20,7 @@ st.divider()
 
 # === URL CERTA — COPIADA DO SEU SUPABASE ===
 API_URL = "https://hbyqdwepwzpjupzyukyts.supabase.co/rest/v1/alertas"
-CHAVE = "COLA_SUA_CHAVE_AQUI"
+CHAVE = "sb_publishable_t2iYYcgneXOXD9JPW5GcnQ_BisRaVZS"
 # ===========================================
 
 headers = {
