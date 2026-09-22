@@ -26,7 +26,6 @@ st.components.v1.html("""
 <style>
 [data-testid="stToolbar"], .stAppHeader, footer, .stDeployButton { display: none !important; }
 .block-container { padding-top: 1rem !important; }
-div[class*="stAlert"] { margin: 0.5rem 0 !important; }
 </style>
 """, height=0)
 
@@ -93,7 +92,7 @@ if not lat or not lon:
     st.info("💡 Depois de tocar, aguarde a página recarregar sozinha")
     st.stop()
 
-# === AQUI SÓ CHEGA DEPOIS DE TER LOCALIZAÇÃO ===
+# === LOCALIZAÇÃO CONFIRMADA ===
 st.success("✅ Localização confirmada!")
 
 st.markdown(f"""
@@ -105,7 +104,7 @@ st.markdown(f"""
 
 st.markdown("<h3 style='text-align:center;margin:25px 0 15px;'>Toque abaixo para acionar</h3>", unsafe_allow_html=True)
 
-# === BOTÃO DE PÂNICO — SÓ ENVIA QUANDO TUDO ESTÁ PRONTO ===
+# === BOTÃO DE PÂNICO — NOMES EXATOS DO BANCO ===
 if st.button("🚨 PÂNICO", type="primary", use_container_width=True):
     if not lat or not lon:
         st.error("❌ Localização não obtida — recarregue e tente de novo")
@@ -113,13 +112,13 @@ if st.button("🚨 PÂNICO", type="primary", use_container_width=True):
         with st.spinner("Enviando alerta para a central..."):
             mapa_link = f"https://www.google.com/maps/search/?api=1&query={lat},{lon}"
             
-            # === DADOS COMPLETOS PARA O SUPABASE ===
+            # ✅ NOMES EXATOS QUE VOCÊ PASSOU: id, nome, hora, lat, lon, endereço, obs, mapa
             dados = {
                 "nome": "ALERTA DE PÂNICO",
                 "hora": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-                "endereço": endereco_auto,
                 "lat": lat,
                 "lon": lon,
+                "endereço": endereco_auto,
                 "obs": "Usuário acionou o botão de PÂNICO — ATENÇÃO URGENTE!",
                 "mapa": mapa_link
             }
@@ -137,7 +136,7 @@ if st.button("🚨 PÂNICO", type="primary", use_container_width=True):
                 st.markdown(f"🔗 [Ver localização no Mapa]({mapa_link})")
             else:
                 st.error(f"❌ Erro {resp.status_code}")
-                st.info(f"Resposta do servidor: {resp.text[:200]}")
+                st.info(f"Resposta: {resp.text[:300]}")
 
 st.divider()
 
