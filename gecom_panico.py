@@ -3,18 +3,16 @@ from datetime import datetime
 
 st.set_page_config(page_title="GECOM Pânico", layout="wide")
 
-# Armazenamento compartilhado
 if "alertas" not in st.session_state:
     st.session_state.alertas = []
 
-# ========== MENU LATERAL ==========
-pagina = st.sidebar.radio("Escolha:", [
-    "📲 ENVIAR ALERTA (Cliente)",
-    "📟 RECEBER ALERTAS (Central)"
+# MENU LATERAL — AQUI APARECE A ESCOLHA
+pagina = st.sidebar.radio("Acesso:", [
+    "📲 ENVIAR ALERTA — Cliente",
+    "📟 RECEBER ALERTAS — Central"
 ])
 
-# ========== TELA DO CLIENTE ==========
-if pagina == "📲 ENVIAR ALERTA (Cliente)":
+if pagina == "📲 ENVIAR ALERTA — Cliente":
     st.markdown("<h1 style='text-align:center;color:red;'>🚨 BOTÃO DE PÂNICO</h1>", unsafe_allow_html=True)
     st.subheader("GECOM SEGURANÇA")
     st.divider()
@@ -23,7 +21,6 @@ if pagina == "📲 ENVIAR ALERTA (Cliente)":
     lat = st.text_input("📍 Latitude")
     lon = st.text_input("📍 Longitude")
 
-    # Localização automática
     st.components.v1.html("""
     <script>
     if(navigator.geolocation){
@@ -44,7 +41,7 @@ if pagina == "📲 ENVIAR ALERTA (Cliente)":
 
     if st.button("🚨 PEDIR SOCORRO AGORA", type="primary", use_container_width=True):
         if not nome:
-            st.error("Digite seu nome!")
+            st.error("⚠️ Digite seu nome!")
         else:
             agora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
             tem_local = bool(lat and lon and lat.strip() and lon.strip())
@@ -63,18 +60,17 @@ if pagina == "📲 ENVIAR ALERTA (Cliente)":
             st.success("✅ ENVIADO PARA A CENTRAL!")
             st.balloons()
 
-# ========== TELA DA CENTRAL ==========
 else:
     st.markdown("<h1 style='text-align:center;color:green;'>📟 CENTRAL DE MONITORAMENTO</h1>", unsafe_allow_html=True)
     st.subheader("GECOM SEGURANÇA — ALERTAS RECEBIDOS")
     st.divider()
 
-    st.rerun()  # Atualiza automaticamente
+    st.rerun()
 
     if not st.session_state.alertas:
-        st.info("✅ Sistema operacional — Nenhum alerta no momento")
+        st.info("✅ Sistema online — Nenhum alerta no momento")
     else:
-        st.warning(f"⚠️ {len(st.session_state.alertas)} ALERTA(S)!")
+        st.warning(f"⚠️ {len(st.session_state.alertas)} ALERTA(S) RECEBIDO(S)!")
         for n, a in enumerate(st.session_state.alertas, 1):
             st.markdown(f"""
             <div style='background:#fff3cd;padding:12px;border-radius:8px;border-left:5px solid red;'>
@@ -83,14 +79,14 @@ else:
             <p><strong>Hora:</strong> {a['hora']}</p>
             <p><strong>Endereço:</strong> {a['endereco']}</p>
             <p><strong>Coordenadas:</strong> {a['lat']} / {a['lon']}</p>
-            <p><strong>Obs:</strong> {a['obs']}</p>
+            <p><strong>Observação:</strong> {a['obs']}</p>
             </div>
             """, unsafe_allow_html=True)
             if a['mapa']:
-                st.markdown(f"[🗺️ ABRIR MAPA]({a['mapa']})")
+                st.markdown(f"[🗺️ ABRIR MAPA → {a['nome']}]({a['mapa']})")
             st.divider()
 
-    if st.button("🗑️ Limpar Lista"):
+    if st.button("🗑️ Limpar Alertas"):
         st.session_state.alertas = []
         st.rerun()
         
