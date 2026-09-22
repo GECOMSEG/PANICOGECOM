@@ -13,11 +13,9 @@ headers = {
     "Content-Type": "application/json"
 }
 
-# Pega da URL
 lat = st.query_params.get("lat", "")
 lon = st.query_params.get("lon", "")
 
-# Converte para endereço
 endereco_auto = ""
 if lat and lon:
     try:
@@ -30,21 +28,37 @@ if lat and lon:
     except:
         pass
 
-# === TÍTULO COMPLETO ===
+# === ESTILO PARA CAMPOS MAIORES ===
+st.markdown("""
+<style>
+div[data-testid="stTextInput"] > div > input,
+div[data-testid="stTextArea"] > div > textarea {
+    font-size: 18px !important;
+    padding: 14px 16px !important;
+    border-radius: 10px !important;
+    border: 1px solid #ccc !important;
+}
+div[data-testid="stForm"] {
+    margin-top: 10px;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# === CABEÇALHO ===
 st.markdown("""
 <h1 style='text-align: center; color: #d32f2f;'>🚨 GECOM SEGURANÇA</h1>
 <h3 style='text-align: center;'>Proteção Máxima · Campo Bom / RS</h3>
 <hr style='border: 1px solid #ddd; margin: 20px 0;'>
 """, unsafe_allow_html=True)
 
-# === BOTÃO DE GPS — SEMPRE APARECE ===
+# === BOTÃO DE LOCALIZAÇÃO ===
 st.info("📌 Clique abaixo para capturar sua localização:")
 
 st.components.v1.html("""
 <button onclick="capturarGPS()" style="width:100%; padding:18px; font-size:20px; background-color:#ff3333; color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold;">
 📍 CAPTURAR MINHA LOCALIZAÇÃO
 </button>
-<p id="status" style="margin-top:15px; color:#555; text-align:center;"></p>
+<p id="status" style="margin-top:15px; color:#555; text-align:center; font-size:16px;"></p>
 
 <script>
 function capturarGPS() {
@@ -66,11 +80,9 @@ function capturarGPS() {
         function(erro) {
             let mensagem = "⚠️ ";
             if (erro.code === 1) {
-                mensagem += "Permita a localização no 🔒 cadeado acima → recarregue a página";
-            } else if (erro.code === 2) {
-                mensagem += "Sinal não encontrado — preencha manualmente";
+                mensagem += "Permita a localização no 🔒 cadeado acima → recarregue";
             } else {
-                mensagem += "Preencha manualmente os campos abaixo";
+                mensagem += "Preencha manualmente abaixo";
             }
             status.textContent = mensagem;
         },
@@ -78,14 +90,14 @@ function capturarGPS() {
     );
 }
 </script>
-""", height=220)
+""", height=230)
 
 st.warning("👇 Preencha manualmente se o GPS não funcionar:")
 st.divider()
 
-# === FORMULÁRIO ===
+# === FORMULÁRIO — CAMPOS AMPLOS ===
 with st.form("alerta"):
-    nome = st.text_input("👤 Seu Nome / Razão Social")
+    nome = st.text_input("👤 Seu Nome / Razão Social", max_chars=200)
     
     col1, col2 = st.columns(2)
     with col1:
@@ -94,7 +106,7 @@ with st.form("alerta"):
         lon = st.text_input("📍 Longitude", value=lon)
     
     endereco = st.text_input("🏠 Endereço Completo", value=endereco_auto)
-    obs = st.text_area("📝 O que está acontecendo?")
+    obs = st.text_area("📝 O que está acontecendo?", height=150)
     
     enviar = st.form_submit_button("🚨 ENVIAR ALERTA", type="primary", use_container_width=True)
 
@@ -124,4 +136,4 @@ if enviar:
             st.error(f"❌ Erro {resp.status_code}")
 
 st.caption("GECOM Segurança — Proteção Máxima · Emergência: 190")
-        
+            
