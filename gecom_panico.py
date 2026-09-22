@@ -18,13 +18,11 @@ headers = {
     "Content-Type": "application/json"
 }
 
-# === PWA — INSTALAÇÃO COMO APP ===
+# === PWA — OCULTAR NAVEGADOR ===
 st.components.v1.html("""
 <meta name="theme-color" content="#ff0000">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="GECOM">
-<link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiR0VDT00gU8OAbmljbyIsInNob3J0X25hbWUiOiJHRUNPTV9QYW5pY28iLCJzdGFydF91cmwiOiIvIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzAwMDAwMCIsInRoZW1lX2NvbG9yIjoiI2ZmMDAwMCJ9">
 <style>
 [data-testid="stToolbar"], .stAppHeader, footer, .stDeployButton { display: none !important; }
 .block-container { padding-top: 1rem !important; }
@@ -81,7 +79,7 @@ if not lat or not lon:
             },
             function(erro) {
                 let msg = "⚠️ Não conseguimos acessar sua localização\\n";
-                if (erro.code === 1) msg += "→ Toque no 🔒 cadeado acima → Permitir localização";
+                if (erro.code === 1) msg += "→ Toque no 🔒 cadeado → Permitir localização";
                 else if (erro.code === 2) msg += "→ Sinal fraco — tente ao ar livre";
                 else msg += "→ Tente novamente";
                 alert(msg);
@@ -92,10 +90,10 @@ if not lat or not lon:
     </script>
     """, height=180)
     
-    st.info("💡 Depois de tocar, a página recarrega sozinha — aguarde!")
+    st.info("💡 Depois de tocar, aguarde a página recarregar sozinha")
     st.stop()
 
-# === ETAPA 2 — SÓ APARECE DEPOIS DE TER LOCALIZAÇÃO ===
+# === AQUI SÓ CHEGA DEPOIS DE TER LOCALIZAÇÃO ===
 st.success("✅ Localização confirmada!")
 
 st.markdown(f"""
@@ -107,7 +105,7 @@ st.markdown(f"""
 
 st.markdown("<h3 style='text-align:center;margin:25px 0 15px;'>Toque abaixo para acionar</h3>", unsafe_allow_html=True)
 
-# === BOTÃO DE PÂNICO — SÓ ENVIA SE TIVER TUDO ===
+# === BOTÃO DE PÂNICO — SÓ ENVIA QUANDO TUDO ESTÁ PRONTO ===
 if st.button("🚨 PÂNICO", type="primary", use_container_width=True):
     if not lat or not lon:
         st.error("❌ Localização não obtida — recarregue e tente de novo")
@@ -115,6 +113,7 @@ if st.button("🚨 PÂNICO", type="primary", use_container_width=True):
         with st.spinner("Enviando alerta para a central..."):
             mapa_link = f"https://www.google.com/maps/search/?api=1&query={lat},{lon}"
             
+            # === DADOS COMPLETOS PARA O SUPABASE ===
             dados = {
                 "nome": "ALERTA DE PÂNICO",
                 "hora": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
@@ -137,7 +136,8 @@ if st.button("🚨 PÂNICO", type="primary", use_container_width=True):
                 """, unsafe_allow_html=True)
                 st.markdown(f"🔗 [Ver localização no Mapa]({mapa_link})")
             else:
-                st.error(f"❌ Erro {resp.status_code} — Tente novamente em instantes")
+                st.error(f"❌ Erro {resp.status_code}")
+                st.info(f"Resposta do servidor: {resp.text[:200]}")
 
 st.divider()
 
