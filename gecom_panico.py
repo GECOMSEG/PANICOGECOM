@@ -4,8 +4,10 @@ from datetime import datetime
 
 st.set_page_config(page_title="GECOM — Emergência", page_icon="🚨", layout="centered")
 
+# === CONFIGURAÇÃO ===
 API_URL = "https://hbyqdrewpzjupzyukyts.supabase.co/rest/v1/alertas"
 CHAVE = "sb_publishable_t2iYYcgneXOXD9JPW5GcnQ_BisRaVZS"
+# =====================
 
 headers = {
     "apikey": CHAVE,
@@ -17,44 +19,48 @@ st.title("🚨 GECOM SEGURANÇA — Emergência")
 st.subheader("Proteção Máxima · Campo Bom / RS")
 st.divider()
 
-# Pega direto da URL
+# === PEGA VALORES DA URL ===
 lat = st.query_params.get("lat", "")
 lon = st.query_params.get("lon", "")
 
+# Se NÃO tem coordenadas → mostra botão para capturar
 if not lat or not lon:
-    st.info("📍 Permita a localização quando solicitado 👇")
+    st.info("📍 Clique no botão abaixo para capturar sua localização:")
+    
     st.components.v1.html("""
-<button onclick="pegarGPS()" style="padding:10px 20px; font-size:16px; background:#ff4444; color:white; border:none; border-radius:8px; cursor:pointer;">
+<button onclick="pegarGPS()" style="width:100%; padding:15px; font-size:18px; background:#ff3333; color:white; border:none; border-radius:10px; cursor:pointer;">
 📌 CAPTURAR MINHA LOCALIZAÇÃO
 </button>
-<p id="status"></p>
+<br>
+<p id="aviso" style="color:gray;"></p>
 
 <script>
 function pegarGPS() {
-    const status = document.getElementById("status");
-    status.innerHTML = "Buscando...";
+    document.getElementById("aviso").innerText = "🔄 Buscando sinal GPS...";
     navigator.geolocation.getCurrentPosition(
         function(pos) {
-            status.innerHTML = "✅ Localização pronta!";
-            window.location.href = window.location.origin + 
-                window.location.pathname + 
-                "?lat=" + pos.coords.latitude + 
-                "&lon=" + pos.coords.longitude;
+            const url = new URL(window.location.href);
+            url.searchParams.set("lat", pos.coords.latitude);
+            url.searchParams.set("lon", pos.coords.longitude);
+            window.location.href = url.toString();
         },
-        function() {
-            status.innerHTML = "❌ Não conseguiu — preencha manualmente";
+        function(erro) {
+            document.getElementById("aviso").innerText = 
+                "⚠️ Permita a localização ou preencha manualmente abaixo.";
         },
         {enableHighAccuracy: true, timeout: 10000}
     );
 }
 </script>
-""", height=150)
-    st.stop()  # Para até clicar no botão
-else:
-    st.success("✅ Localização capturada!")
+""", height=180)
+    
+    st.stop()  # Espera o usuário capturar
 
-# Formulário com valores preenchidos
-with st.form("chamada"):
+# ✅ TEM COORDENADAS — MOSTRA FORMULÁRIO COMPLETO
+st.success("✅ Localização capturada com sucesso!")
+st.divider()
+
+with st.form("form_emergencia"):
     nome = st.text_input("👤 Seu Nome / Razão Social")
     
     col1, col2 = st.columns(2)
@@ -68,6 +74,7 @@ with st.form("chamada"):
     
     enviar = st.form_submit_button("🚨 ENVIAR ALERTA", type="primary", use_container_width=True)
 
+# === ENVIA PARA A CENTRAL ===
 if enviar:
     if not nome:
         st.error("❌ Digite seu nome!")
@@ -85,9 +92,11 @@ if enviar:
         resp = requests.post(API_URL, json=dados, headers=headers)
         
         if resp.status_code in [200, 201]:
-            st.success("✅ ENVIADO PARA A CENTRAL!")
+            st.success("✅ ALERTA ENVIADO PARA A CENTRAL!")
             st.balloons()
+            # Link do mapa
+            st.markdown(f"🔗 [Ver no Google Maps]({dados['mapa']})")
         else:
-            st.error(f"❌ Erro {resp.status_code}")
+            st.error(f"❌ Erro {resp.status_code}: {resp.text}")
 
 st.caption("GECOM Segurança — Proteção Máxima · Emergência: 190")
