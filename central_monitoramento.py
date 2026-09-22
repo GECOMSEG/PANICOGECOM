@@ -19,7 +19,7 @@ st.subheader("Proteção Máxima · Campo Bom / RS")
 st.divider()
 
 # === URL CERTA — COPIADA DO SEU SUPABASE ===
-API_URL = "Project URL: https://hbyqdwepwzpjupzyukyts.supabase.co
+API_URL = "Project URL: https://hbyqdwepwzpjupzyukyts.supabase.co"
 "
 CHAVE = "sb_publishable_t2iYYcgneXOXD9JPW5GcnQ_BisRaVZS"
 # ===========================================
