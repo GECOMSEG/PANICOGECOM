@@ -6,7 +6,7 @@ st.set_page_config(page_title="GECOM — Emergência", page_icon="🚨", layout=
 
 # === CONFIGURAÇÃO ===
 API_URL = "https://hbyqdrewpzjupzyukyts.supabase.co/rest/v1/alertas"
-CHAVE = "sb_publishable_t2iYYcgneXOXD9JPW5GcnQ_BisRaVZS"
+CHAVE = "COLA_A_PUBLISHABLE_KEY_AQUI"
 # =====================
 
 headers = {
@@ -27,7 +27,6 @@ if lat and lon:
     st.success(f"✅ Localização obtida!")
 else:
     st.info("📍 Clique em PERMITIR quando o navegador pedir!")
-    # Dispara a localização e recarrega
     st.components.v1.html("""
 <script>
 if (navigator.geolocation) {
@@ -39,17 +38,15 @@ if (navigator.geolocation) {
             window.location.href = url.toString();
         },
         function(erro) {
-            alert("Não foi possível obter localização. Preencha manualmente.");
+            console.log("GPS indisponível");
         },
         {enableHighAccuracy: true, timeout: 10000}
     );
-} else {
-    alert("Seu navegador não suporta localização.");
 }
 </script>
 """, height=0)
 
-# === FORMULÁRIO SEMPRE APARECE ===
+# === FORMULÁRIO ===
 with st.form("chamada"):
     nome = st.text_input("👤 Seu Nome / Razão Social")
     
@@ -64,29 +61,27 @@ with st.form("chamada"):
     
     enviar = st.form_submit_button("🚨 ENVIAR ALERTA", type="primary", use_container_width=True)
 
-# === ENVIO ===
+# === ENVIO — SEM ACENTO NOS CAMPOS ===
 if enviar:
     if not nome:
         st.error("❌ Digite seu nome!")
-    elif not lat or not lon:
-        st.warning("⚠️ Sem localização — enviando mesmo assim...")
-    
-    dados = {
-        "nome": nome or "Anônimo",
-        "hora": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-        "endereço": endereco or "Não informado",
-        "lat": lat,
-        "lon": lon,
-        "obs": obs,
-        "mapa": f"https://www.google.com/maps/search/?api=1&query={lat},{lon}" if lat and lon else ""
-    }
-    
-    resp = requests.post(API_URL, json=dados, headers=headers)
-    
-    if resp.status_code in [200, 201]:
-        st.success("✅ ALERTA ENVIADO PARA A CENTRAL!")
-        st.balloons()
     else:
-        st.error(f"❌ Erro {resp.status_code}: {resp.text}")
+        dados = {
+            "nome": nome,
+            "hora": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+            "endereco": endereco or "Não informado",  # ✅ SEM ACENTO!
+            "lat": lat,
+            "lon": lon,
+            "obs": obs,
+            "mapa": f"https://www.google.com/maps/search/?api=1&query={lat},{lon}" if lat and lon else ""
+        }
+        
+        resp = requests.post(API_URL, json=dados, headers=headers)
+        
+        if resp.status_code in [200, 201]:
+            st.success("✅ ALERTA ENVIADO PARA A CENTRAL!")
+            st.balloons()
+        else:
+            st.error(f"❌ Erro {resp.status_code}: {resp.text}")
 
 st.caption("GECOM Segurança — Proteção Máxima · Emergência: 190")
