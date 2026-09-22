@@ -15,29 +15,29 @@ headers = {
     "Content-Type": "application/json"
 }
 
-# === PEGA GPS E GUARDA ===
+# === PEGA DA URL ===
 lat = st.query_params.get("lat", "")
 lon = st.query_params.get("lon", "")
 
-# Tenta converter GPS → Endereço
+# Converte GPS → Endereço automático
 endereco_auto = ""
 if lat and lon:
     try:
-        import json
-        import urllib.request
+        import json, urllib.request
         url = f"https://nominatim.openstreetmap.org/reverse?format=json&lat={lat}&lon={lon}&accept-language=pt-BR"
         req = urllib.request.Request(url, headers={"User-Agent": "GECOM/1.0"})
         with urllib.request.urlopen(req, timeout=5) as resp:
-            dados_end = json.loads(resp.read().decode())
-            endereco_auto = dados_end.get("display_name", "")
+            dados = json.loads(resp.read().decode())
+            endereco_auto = dados.get("display_name", "")
     except:
         endereco_auto = ""
 
+# === CABEÇALHO ÚNICO ===
 st.title("🚨 GECOM SEGURANÇA — Emergência")
 st.subheader("Proteção Máxima · Campo Bom / RS")
 st.divider()
 
-# === BOTÃO DE CAPTURA ===
+# === BOTÃO DE CAPTURA — SÓ APARECE SE NÃO TIVER LOCALIZAÇÃO ===
 if not lat or not lon:
     st.info("📌 Clique abaixo e PERMITA a localização:")
     
@@ -45,12 +45,12 @@ if not lat or not lon:
 <button onclick="capturarGPS()" style="width:100%; padding:15px; font-size:18px; background:#ff3333; color:white; border:none; border-radius:10px; cursor:pointer;">
 📍 CAPTURAR MINHA LOCALIZAÇÃO
 </button>
-<p id="msg" style="margin-top:10px; color:#555;"></p>
+<p id="aviso" style="margin-top:10px; color:#666;"></p>
 
 <script>
 function capturarGPS() {
-    const msg = document.getElementById("msg");
-    msg.innerText = "🔄 Buscando sinal GPS...";
+    const aviso = document.getElementById("aviso");
+    aviso.innerText = "🔄 Buscando...";
     navigator.geolocation.getCurrentPosition(
         function(pos) {
             window.location.href = 
@@ -60,20 +60,21 @@ function capturarGPS() {
                 "&lon=" + pos.coords.longitude;
         },
         function(erro) {
-            if (erro.code === 1) msg.innerText = "⚠️ Permita a localização no 🔒 cadeado acima";
-            else if (erro.code === 2) msg.innerText = "⚠️ Sinal não encontrado — preencha abaixo";
-            else msg.innerText = "⚠️ Preencha manualmente os campos abaixo";
+            aviso.innerText = "⚠️ Preencha manualmente os campos abaixo";
         },
         {enableHighAccuracy: true, timeout: 15000}
     );
 }
 </script>
-""", height=180)
-    st.warning("👇 Preencha manualmente se o GPS não aparecer:")
+""", height=170)
+    
+    st.warning("👇 Preencha manualmente se o GPS não funcionar:")
+    st.divider()
+else:
+    st.success("✅ Localização capturada!")
+    st.divider()
 
-st.divider()
-
-# === FORMULÁRIO ===
+# === FORMULÁRIO — APARECE UMA VEZ SÓ ===
 with st.form("alerta"):
     nome = st.text_input("👤 Seu Nome / Razão Social")
     
@@ -109,9 +110,9 @@ if enviar:
             st.success("✅ ALERTA ENVIADO PARA A CENTRAL!")
             st.balloons()
             if lat and lon:
-                st.markdown(f"🔗 [Ver localização no Mapa]({dados['mapa']})")
+                st.markdown(f"🔗 [Ver no Mapa]({dados['mapa']})")
         else:
             st.error(f"❌ Erro {resp.status_code}")
 
 st.caption("GECOM Segurança — Proteção Máxima · Emergência: 190")
-    
+        
