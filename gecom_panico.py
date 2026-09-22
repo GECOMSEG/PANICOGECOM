@@ -29,7 +29,7 @@ if lat and lon:
         pass
 
 # === TÍTULO ===
-st.markdown("<h1 style='text-align: center;'>🚨GECOM SEGURANÇA</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>GECOMSEGURANÇA</h1>", unsafe_allow_html=True)
 st.markdown("<h4 style='text-align: center; color: #555;'>Proteção Máxima · ARARICA/ RS</h4>", unsafe_allow_html=True)
 st.divider()
 
