@@ -140,4 +140,4 @@ with st.spinner("Carregando..."):
         st.warning(f"Conectando... {str(e)}")
 
 st.divider()
-st.caption("GECOM Segurança · Notificações Push Ativadas · Emergência: 190")
+st.caption("GECOM SEGURANÇA ME· PROTEÇÃO MÁXIMA· Emergência: (51)99846.3374")
