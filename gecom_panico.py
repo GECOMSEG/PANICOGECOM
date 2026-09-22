@@ -30,7 +30,7 @@ if lat and lon:
 
 # === TÍTULO ===
 st.markdown("<h1 style='text-align: center;color: #FF0000'>GECOM SEGURANÇA</h1>", unsafe_allow_html=True)
-st.markdown("<h4 style='text-align: center; color: #555;'>Proteção Máxima · ARARICA/ RS</h4>", unsafe_allow_html=True)
+st.markdown("<h4 style='text-align: center; color: #FFFFF0;'>Proteção Máxima · ARARICA/ RS</h4>", unsafe_allow_html=True)
 st.divider()
 
 # === BOTÃO DE LOCALIZAÇÃO — AGORA APARECENDO CERTINHO ===
