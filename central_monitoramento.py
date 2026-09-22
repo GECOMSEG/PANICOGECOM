@@ -4,7 +4,7 @@ from datetime import datetime
 
 # === DADOS EXATOS DO SEU PROJETO ===
 API_URL = "https://hbyqdrewpzjupzyukyts.supabase.co/rest/v1/alertas"
-CHAVE = "sb_publishable_t21VYcgneOXD93PW5GcnQ_BisRaVZS"
+CHAVE = "sb_publishable_t2iYYcgneXOXD9JPW5GcnQ_BisRaVZS"
 # ====================================
 
 st.set_page_config(page_title="CENTRAL — GECOM", page_icon="🚨", layout="wide")
