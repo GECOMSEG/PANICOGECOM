@@ -17,7 +17,7 @@ headers = {
 lat = st.query_params.get("lat", "")
 lon = st.query_params.get("lon", "")
 
-# Converte GPS → Endereço
+# Converte para endereço
 endereco_auto = ""
 if lat and lon:
     try:
@@ -28,68 +28,73 @@ if lat and lon:
             dados = json.loads(resp.read().decode())
             endereco_auto = dados.get("display_name", "")
     except:
-        endereco_auto = ""
+        pass
 
-# === CABEÇALHO ===
-st.title("🚨 GECOM SEGURANÇA — Emergência")
-st.subheader("Proteção Máxima · Campo Bom / RS")
-st.divider()
+# === TÍTULO COMPLETO ===
+st.markdown("""
+<h1 style='text-align: center; color: #d32f2f;'>🚨 GECOM SEGURANÇA</h1>
+<h3 style='text-align: center;'>Proteção Máxima · Campo Bom / RS</h3>
+<hr style='border: 1px solid #ddd; margin: 20px 0;'>
+""", unsafe_allow_html=True)
 
-# === BOTÃO DE CAPTURA + PREENCHE NA HORA ===
-if not lat or not lon:
-    st.info("📌 Clique e PERMITA sua localização:")
-    
-    st.components.v1.html("""
-<div style="margin: 10px 0;">
-<button onclick="capturarGPS()" style="width:100%; padding:15px; font-size:18px; background:#ff3333; color:white; border:none; border-radius:10px; cursor:pointer;">
+# === BOTÃO DE GPS — SEMPRE APARECE ===
+st.info("📌 Clique abaixo para capturar sua localização:")
+
+st.components.v1.html("""
+<button onclick="capturarGPS()" style="width:100%; padding:18px; font-size:20px; background-color:#ff3333; color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold;">
 📍 CAPTURAR MINHA LOCALIZAÇÃO
 </button>
-<p id="aviso" style="margin-top:10px; color:#555;"></p>
-</div>
+<p id="status" style="margin-top:15px; color:#555; text-align:center;"></p>
 
 <script>
 function capturarGPS() {
-    const aviso = document.getElementById("aviso");
-    aviso.innerText = "🔄 Buscando...";
+    const status = document.getElementById("status");
+    status.textContent = "🔄 Buscando sinal GPS...";
+    
+    if (!navigator.geolocation) {
+        status.textContent = "❌ Navegador não suporta GPS — preencha abaixo";
+        return;
+    }
     
     navigator.geolocation.getCurrentPosition(
-        function(pos) {
-            // Guarda valores e recarrega com eles
-            window.location.href = 
-                window.location.origin + 
-                window.location.pathname + 
-                "?lat=" + pos.coords.latitude + 
-                "&lon=" + pos.coords.longitude;
+        function(sucesso) {
+            const url = new URL(window.location.href);
+            url.searchParams.set("lat", sucesso.coords.latitude);
+            url.searchParams.set("lon", sucesso.coords.longitude);
+            window.location.href = url.toString();
         },
         function(erro) {
-            aviso.innerText = "⚠️ " + (erro.code === 1 
-                ? "Clique no 🔒 cadeado → Permitir Localização" 
-                : "Preencha manualmente abaixo");
+            let mensagem = "⚠️ ";
+            if (erro.code === 1) {
+                mensagem += "Permita a localização no 🔒 cadeado acima → recarregue a página";
+            } else if (erro.code === 2) {
+                mensagem += "Sinal não encontrado — preencha manualmente";
+            } else {
+                mensagem += "Preencha manualmente os campos abaixo";
+            }
+            status.textContent = mensagem;
         },
-        {enableHighAccuracy: true, timeout: 10000}
+        {enableHighAccuracy: true, timeout: 15000}
     );
 }
 </script>
-""", height=180)
-    
-    st.warning("👇 Preencha manualmente se o GPS não aparecer:")
-else:
-    st.success("✅ Localização capturada! Dados já preenchidos abaixo:")
+""", height=220)
 
+st.warning("👇 Preencha manualmente se o GPS não funcionar:")
 st.divider()
 
-# === FORMULÁRIO SEMPRE VISÍVEL ===
+# === FORMULÁRIO ===
 with st.form("alerta"):
     nome = st.text_input("👤 Seu Nome / Razão Social")
     
     col1, col2 = st.columns(2)
     with col1:
-        lat = st.text_input("📍 Latitude", value=lat, key="lat_input")
+        lat = st.text_input("📍 Latitude", value=lat)
     with col2:
-        lon = st.text_input("📍 Longitude", value=lon, key="lon_input")
+        lon = st.text_input("📍 Longitude", value=lon)
     
-    endereco = st.text_input("🏠 Endereço Completo", value=endereco_auto, key="end_input")
-    obs = st.text_area("📝 O que está acontecendo?", key="obs_input")
+    endereco = st.text_input("🏠 Endereço Completo", value=endereco_auto)
+    obs = st.text_area("📝 O que está acontecendo?")
     
     enviar = st.form_submit_button("🚨 ENVIAR ALERTA", type="primary", use_container_width=True)
 
@@ -114,8 +119,9 @@ if enviar:
             st.success("✅ ALERTA ENVIADO PARA A CENTRAL!")
             st.balloons()
             if lat and lon:
-                st.markdown(f"🔗 [Ver no Mapa]({dados['mapa']})")
+                st.markdown(f"🔗 [Ver localização no Mapa]({dados['mapa']})")
         else:
             st.error(f"❌ Erro {resp.status_code}")
 
 st.caption("GECOM Segurança — Proteção Máxima · Emergência: 190")
+        
