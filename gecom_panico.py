@@ -29,30 +29,34 @@ if lat and lon:
         pass
 
 # === TÍTULO ===
-st.title("🚨 GECOM SEGURANÇA")
-st.subheader("Proteção Máxima · Campo Bom / RS")
+st.markdown("<h1 style='text-align: center;'>🚨 GECOM SEGURANÇA</h1>", unsafe_allow_html=True)
+st.markdown("<h4 style='text-align: center; color: #555;'>Proteção Máxima · Campo Bom / RS</h4>", unsafe_allow_html=True)
 st.divider()
 
-# === BOTÃO DE LOCALIZAÇÃO ===
+# === BOTÃO DE LOCALIZAÇÃO — AGORA APARECENDO CERTINHO ===
 if not lat or not lon:
-    st.markdown("### 📍 Capturar Localização")
-    html_botao = """
-    <button onclick="capturarGPS()" style="width:100%; padding:20px; font-size:22px; background:#ff3333; color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold;">
-    📍 CLIQUE AQUI — ENVIAR LOCALIZAÇÃO
-    </button>
+    st.markdown("<h3>📍 Capturar Localização</h3>", unsafe_allow_html=True)
+    
+    # BOTÃO GRANDE E VERMELHO VISÍVEL
+    st.components.v1.html("""
+    <div style="margin: 10px 0 20px 0;">
+        <button onclick="capturarGPS()" style="width:100%; padding:20px; font-size:22px; background:#ff3333; color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold;">
+        📍 CLIQUE AQUI — ENVIAR LOCALIZAÇÃO
+        </button>
+    </div>
     <script>
     function capturarGPS() {
         navigator.geolocation.getCurrentPosition(
             function(sucesso) {
                 window.location.href = window.location.origin + window.location.pathname + "?lat=" + sucesso.coords.latitude + "&lon=" + sucesso.coords.longitude;
             },
-            function(erro) { alert("Permita o acesso à localização!"); },
+            function(erro) { alert("⚠️ Permita o acesso à localização nas configurações!"); },
             {enableHighAccuracy: true, timeout: 15000}
         );
     }
     </script>
-    """
-    st.components.v1.html(html_botao, height=10)
+    """, height=130)
+    
     st.info("Após permitir, a página recarrega e preenche tudo sozinho ✅")
     st.divider()
 
