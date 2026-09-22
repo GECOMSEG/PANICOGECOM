@@ -4,10 +4,8 @@ from datetime import datetime
 
 st.set_page_config(page_title="GECOM — Emergência", page_icon="🚨", layout="centered")
 
-# === CONFIGURAÇÃO ===
 API_URL = "https://hbyqdrewpzjupzyukyts.supabase.co/rest/v1/alertas"
 CHAVE = "sb_publishable_t2iYYcgneXOXD9JPW5GcnQ_BisRaVZS"
-# =====================
 
 headers = {
     "apikey": CHAVE,
@@ -15,72 +13,74 @@ headers = {
     "Content-Type": "application/json"
 }
 
-# Inicializa valores na sessão
-if "lat" not in st.session_state:
-    st.session_state.lat = ""
-if "lon" not in st.session_state:
-    st.session_state.lon = ""
-
-# Pega da URL se veio
-lat_url = st.query_params.get("lat", "")
-lon_url = st.query_params.get("lon", "")
-if lat_url and lon_url:
-    st.session_state.lat = lat_url
-    st.session_state.lon = lon_url
-
 st.title("🚨 GECOM SEGURANÇA — Emergência")
 st.subheader("Proteção Máxima · Campo Bom / RS")
 st.divider()
 
-# Se JÁ tem coordenadas → mostra formulário
-if st.session_state.lat and st.session_state.lon:
-    st.success("✅ Localização capturada!")
-else:
-    st.info("📍 Clique no botão abaixo:")
+# Pega da URL
+lat = st.query_params.get("lat", "")
+lon = st.query_params.get("lon", "")
+
+# === BOTÃO DE CAPTURA ===
+if not lat or not lon:
+    st.info("📌 Clique e PERMITA quando o navegador pedir!")
     
     st.components.v1.html("""
-<button onclick="pegarGPS()" style="width:100%; padding:15px; font-size:18px; background:#ff3333; color:white; border:none; border-radius:10px; cursor:pointer;">
-📌 CAPTURAR MINHA LOCALIZAÇÃO
+<div style="text-align:center; margin:10px 0;">
+<button onclick="capturarGPS()" style="font-size:20px; padding:15px 30px; background-color:#ff3333; color:white; border:none; border-radius:10px; cursor:pointer; width:100%;">
+📍 CAPTURAR MINHA LOCALIZAÇÃO
 </button>
-<p id="status" style="margin-top:10px;"></p>
+<p id="mensagem" style="margin-top:15px; color:#555;"></p>
+</div>
 
 <script>
-function pegarGPS() {
-    document.getElementById("status").innerText = "🔄 Buscando...";
+function capturarGPS() {
+    const msg = document.getElementById("mensagem");
+    msg.textContent = "🔄 Buscando...";
+    
+    if (!navigator.geolocation) {
+        msg.textContent = "❌ Seu navegador não suporta GPS — preencha abaixo";
+        return;
+    }
+    
     navigator.geolocation.getCurrentPosition(
-        function(pos) {
+        function(sucesso) {
             const url = new URL(window.location.href);
-            url.searchParams.set("lat", pos.coords.latitude);
-            url.searchParams.set("lon", pos.coords.longitude);
+            url.searchParams.set("lat", sucesso.coords.latitude);
+            url.searchParams.set("lon", sucesso.coords.longitude);
             window.location.href = url.toString();
         },
         function(erro) {
-            document.getElementById("status").innerText = 
-                "⚠️ Permita a localização ou preencha abaixo.";
+            let texto = "⚠️ ";
+            if (erro.code === 1) texto += "Clique no 🔒 cadeado ao lado → Permitir Localização";
+            else if (erro.code === 2) texto += "Sinal de localização não encontrado";
+            else if (erro.code === 3) texto += "Tempo esgotado — tente de novo";
+            else texto += "Não foi possível capturar";
+            msg.textContent = texto;
         },
-        {enableHighAccuracy: true, timeout: 15000}
+        {enableHighAccuracy: true, timeout: 10000, maximumAge: 0}
     );
 }
 </script>
-""", height=160)
+""", height=200)
 
-# === FORMULÁRIO SEMPRE VISÍVEL ===
 st.divider()
-with st.form("form_emergencia"):
+
+# === FORMULÁRIO SEMPRE APARECE ===
+with st.form("envio"):
     nome = st.text_input("👤 Seu Nome / Razão Social")
     
     col1, col2 = st.columns(2)
     with col1:
-        lat = st.text_input("📍 Latitude", value=st.session_state.lat)
+        lat = st.text_input("📍 Latitude", value=lat)
     with col2:
-        lon = st.text_input("📍 Longitude", value=st.session_state.lon)
+        lon = st.text_input("📍 Longitude", value=lon)
     
     endereco = st.text_input("🏠 Endereço Completo")
     obs = st.text_area("📝 O que está acontecendo?")
     
     enviar = st.form_submit_button("🚨 ENVIAR ALERTA", type="primary", use_container_width=True)
 
-# === ENVIO ===
 if enviar:
     if not nome:
         st.error("❌ Digite seu nome!")
@@ -100,12 +100,7 @@ if enviar:
         if resp.status_code in [200, 201]:
             st.success("✅ ALERTA ENVIADO PARA A CENTRAL!")
             st.balloons()
-            if lat and lon:
-                st.markdown(f"🔗 [Ver no Mapa]({dados['mapa']})")
-            # Limpa para novo uso
-            st.session_state.lat = ""
-            st.session_state.lon = ""
         else:
-            st.error(f"❌ Erro {resp.status_code}: {resp.text}")
+            st.error(f"❌ Erro {resp.status_code}")
 
 st.caption("GECOM Segurança — Proteção Máxima · Emergência: 190")
