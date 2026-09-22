@@ -1,11 +1,10 @@
 import streamlit as st
-from supabase import create_client, Client
+from supabase import create_client
 from datetime import datetime
 
-# === DADOS DO SEU PROJETO ===
+# DADOS CORRETOS
 SUPABASE_URL = "https://hbyqdrewpzjupzyukyts.supabase.co"
 SUPABASE_KEY = "sb_publishable_t21VYcgneOXD93PW5GcnQ_BisRaVZS"
-# ============================
 
 st.set_page_config(page_title="GECOM Alerta Panico", page_icon="🚨", layout="centered")
 
@@ -46,15 +45,15 @@ if st.button("🚨 ENVIAR ALERTA AGORA", type="primary"):
             dados = {
                 "nome": nome,
                 "hora": hora_atual,
-                "lat": lat,
-                "lon": lon,
-                "endereco": endereco,
-                "obs": obs,
-                "mapa": mapa_link
+                "lat": lat or "",
+                "lon": lon or "",
+                "endereco": endereco or "",
+                "obs": obs or "",
+                "mapa": mapa_link or ""
             }
             
             supabase.table("alertas").insert(dados).execute()
-            
+        
         st.success("✅ ALERTA ENVIADO PARA A CENTRAL!")
         st.info(f"Nome: {nome}\nHora: {hora_atual}\nEndereco: {endereco or 'Nao informado'}")
         if mapa_link:
