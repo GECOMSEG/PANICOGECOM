@@ -1,13 +1,12 @@
 import streamlit as st
 import requests
 from datetime import datetime
-import time
 
 st.set_page_config(page_title="GECOM — Emergência", page_icon="🚨", layout="centered")
 
 # === CONFIGURAÇÃO ===
 API_URL = "https://hbyqdrewpzjupzyukyts.supabase.co/rest/v1/alertas"
-CHAVE = "sb_publishable_t2iYYcgneXOXD9JPW5GcnQ_BisRaVZS"
+CHAVE = "COLA_A_PUBLISHABLE_KEY_AQUI"
 # =====================
 
 headers = {
@@ -20,91 +19,74 @@ st.title("🚨 GECOM SEGURANÇA — Emergência")
 st.subheader("Proteção Máxima · Campo Bom / RS")
 st.divider()
 
-# === INICIALIZA VARIÁVEIS ===
-if "lat" not in st.session_state:
-    st.session_state.lat = ""
-if "lon" not in st.session_state:
-    st.session_state.lon = ""
-if "endereco" not in st.session_state:
-    st.session_state.endereco = ""
+# === LEITURA DOS DADOS DA URL ===
+lat = st.query_params.get("lat", "")
+lon = st.query_params.get("lon", "")
 
-# === PEGA LOCALIZAÇÃO — MÉTODO CONFIÁVEL ===
-st.info("📍 Solicitando localização...")
-
-# HTML com retorno garantido
-gps_html = """
-<div id="status">Aguardando permissão...</div>
-<script>
-navigator.geolocation.getCurrentPosition(
-    function(pos) {
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
-        document.getElementById("status").innerHTML = 
-            "✅ Localização obtida! Lat: " + lat + ", Lon: " + lon;
-        // Envia para o Streamlit via URL
-        window.location.href = window.location.origin + 
-            window.location.pathname + "?lat=" + lat + "&lon=" + lon;
-    },
-    function(erro) {
-        let msg = "Erro: ";
-        if (erro.code === 1) msg += "Permita a localização!";
-        else if (erro.code === 2) msg += "Não foi encontrado sinal GPS";
-        else msg += "Tempo esgotado";
-        document.getElementById("status").innerHTML = "❌ " + msg;
-    },
-    {enableHighAccuracy: true, timeout: 8000, maximumAge: 0}
-);
-</script>
-"""
-
-# Lê da URL se já veio
-params = st.query_params
-if "lat" in params and "lon" in params:
-    st.session_state.lat = params["lat"]
-    st.session_state.lon = params["lon"]
-    st.success("✅ Localização carregada!")
+if lat and lon:
+    st.success(f"✅ Localização obtida!")
 else:
-    st.components.v1.html(gps_html, height=100)
-    st.warning("👆 Permita a localização quando aparecer acima!")
-    st.stop()  # Espera recarregar com os dados
+    st.info("📍 Clique em PERMITIR quando o navegador pedir!")
+    # Dispara a localização e recarrega
+    st.components.v1.html("""
+<script>
+if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+        function(pos) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('lat', pos.coords.latitude);
+            url.searchParams.set('lon', pos.coords.longitude);
+            window.location.href = url.toString();
+        },
+        function(erro) {
+            alert("Não foi possível obter localização. Preencha manualmente.");
+        },
+        {enableHighAccuracy: true, timeout: 10000}
+    );
+} else {
+    alert("Seu navegador não suporta localização.");
+}
+</script>
+""", height=0)
 
-# === FORMULÁRIO ===
-with st.form("form_chamada"):
+# === FORMULÁRIO SEMPRE APARECE ===
+with st.form("chamada"):
     nome = st.text_input("👤 Seu Nome / Razão Social")
     
     col1, col2 = st.columns(2)
     with col1:
-        lat = st.text_input("📍 Latitude", value=st.session_state.lat)
+        lat = st.text_input("📍 Latitude", value=lat)
     with col2:
-        lon = st.text_input("📍 Longitude", value=st.session_state.lon)
+        lon = st.text_input("📍 Longitude", value=lon)
     
-    endereco = st.text_input("🏠 Endereço (confirme ou altere)")
+    endereco = st.text_input("🏠 Endereço Completo")
     obs = st.text_area("📝 O que está acontecendo?")
     
-    enviado = st.form_submit_button("🚨 ENVIAR ALERTA", type="primary", use_container_width=True)
+    enviar = st.form_submit_button("🚨 ENVIAR ALERTA", type="primary", use_container_width=True)
 
-# === ENVIA ===
-if enviado:
+# === ENVIO ===
+if enviar:
     if not nome:
         st.error("❌ Digite seu nome!")
+    elif not lat or not lon:
+        st.warning("⚠️ Sem localização — enviando mesmo assim...")
+    
+    dados = {
+        "nome": nome or "Anônimo",
+        "hora": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+        "endereço": endereco or "Não informado",
+        "lat": lat,
+        "lon": lon,
+        "obs": obs,
+        "mapa": f"https://www.google.com/maps/search/?api=1&query={lat},{lon}" if lat and lon else ""
+    }
+    
+    resp = requests.post(API_URL, json=dados, headers=headers)
+    
+    if resp.status_code in [200, 201]:
+        st.success("✅ ALERTA ENVIADO PARA A CENTRAL!")
+        st.balloons()
     else:
-        dados = {
-            "nome": nome,
-            "hora": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-            "endereço": endereco or "Não informado",
-            "lat": lat,
-            "lon": lon,
-            "obs": obs,
-            "mapa": f"https://www.google.com/maps/search/?api=1&query={lat},{lon}" if lat and lon else ""
-        }
-        
-        resp = requests.post(API_URL, json=dados, headers=headers)
-        
-        if resp.status_code in [200, 201]:
-            st.success("✅ ALERTA ENVIADO! A Central foi notificada!")
-            st.balloons()
-        else:
-            st.error(f"❌ Erro {resp.status_code}")
+        st.error(f"❌ Erro {resp.status_code}: {resp.text}")
 
 st.caption("GECOM Segurança — Proteção Máxima · Emergência: 190")
-    
