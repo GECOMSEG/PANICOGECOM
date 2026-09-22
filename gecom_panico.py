@@ -28,7 +28,7 @@ if lat and lon:
     except:
         pass
 
-# === ESTILO PARA CAMPOS MAIORES ===
+# === CAMPOS MAIORES ===
 st.markdown("""
 <style>
 div[data-testid="stTextInput"] > div > input,
@@ -36,15 +36,11 @@ div[data-testid="stTextArea"] > div > textarea {
     font-size: 18px !important;
     padding: 14px 16px !important;
     border-radius: 10px !important;
-    border: 1px solid #ccc !important;
-}
-div[data-testid="stForm"] {
-    margin-top: 10px;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# === CABEÇALHO ===
+# === TÍTULO ===
 st.markdown("""
 <h1 style='text-align: center; color: #d32f2f;'>🚨 GECOM SEGURANÇA</h1>
 <h3 style='text-align: center;'>Proteção Máxima · Campo Bom / RS</h3>
@@ -52,23 +48,19 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # === BOTÃO DE LOCALIZAÇÃO ===
-st.info("📌 Clique abaixo para capturar sua localização:")
-
-st.components.v1.html("""
-<button onclick="capturarGPS()" style="width:100%; padding:18px; font-size:20px; background-color:#ff3333; color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold;">
+if not lat or not lon:
+    st.info("📌 Clique para capturar sua localização:")
+    
+    st.components.v1.html("""
+<button onclick="capturarGPS()" style="width:100%; padding:18px; font-size:20px; background:#ff3333; color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold;">
 📍 CAPTURAR MINHA LOCALIZAÇÃO
 </button>
-<p id="status" style="margin-top:15px; color:#555; text-align:center; font-size:16px;"></p>
+<p id="status" style="margin-top:15px; color:#555; text-align:center;"></p>
 
 <script>
 function capturarGPS() {
     const status = document.getElementById("status");
-    status.textContent = "🔄 Buscando sinal GPS...";
-    
-    if (!navigator.geolocation) {
-        status.textContent = "❌ Navegador não suporta GPS — preencha abaixo";
-        return;
-    }
+    status.textContent = "🔄 Buscando...";
     
     navigator.geolocation.getCurrentPosition(
         function(sucesso) {
@@ -78,26 +70,21 @@ function capturarGPS() {
             window.location.href = url.toString();
         },
         function(erro) {
-            let mensagem = "⚠️ ";
-            if (erro.code === 1) {
-                mensagem += "Permita a localização no 🔒 cadeado acima → recarregue";
-            } else {
-                mensagem += "Preencha manualmente abaixo";
-            }
-            status.textContent = mensagem;
+            status.textContent = "";
         },
         {enableHighAccuracy: true, timeout: 15000}
     );
 }
 </script>
-""", height=230)
+""", height=200)
+else:
+    st.success("✅ Localização capturada!")
 
-st.warning("👇 Preencha manualmente se o GPS não funcionar:")
 st.divider()
 
-# === FORMULÁRIO — CAMPOS AMPLOS ===
+# === FORMULÁRIO — SEMPRE APARECE, SEM TEXTOS EXTRAS ===
 with st.form("alerta"):
-    nome = st.text_input("👤 Seu Nome / Razão Social", max_chars=200)
+    nome = st.text_input("👤 Seu Nome / Razão Social")
     
     col1, col2 = st.columns(2)
     with col1:
@@ -128,12 +115,12 @@ if enviar:
         resp = requests.post(API_URL, json=dados, headers=headers)
         
         if resp.status_code in [200, 201]:
-            st.success("✅ ALERTA ENVIADO PARA A CENTRAL!")
+            st.success("✅ ALERTA ENVIADO!")
             st.balloons()
             if lat and lon:
-                st.markdown(f"🔗 [Ver localização no Mapa]({dados['mapa']})")
+                st.markdown(f"🔗 [Ver no Mapa]({dados['mapa']})")
         else:
             st.error(f"❌ Erro {resp.status_code}")
 
-st.caption("GECOM Segurança — Proteção Máxima · Emergência: 190")
+st.caption("GECOM Segurança · Emergência: 190")
             
