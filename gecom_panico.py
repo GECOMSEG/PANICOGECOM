@@ -55,7 +55,7 @@ if not lat or not lon:
         );
     }
     </script>
-    """, height=60)
+    """, height=200)
     
 
 # === FORMULÁRIO ===
