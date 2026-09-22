@@ -28,18 +28,29 @@ if lat and lon:
     except:
         pass
 
-# === ESTILO ===
+# === TAMANHOS IGUAIS PARA TODOS OS CAMPOS ===
 st.markdown("""
 <style>
-div[data-testid="stTextInput"] > div > input,
+div[data-testid="stTextInput"] > div > input {
+    font-size: 18px !important;
+    padding: 14px 16px !important;
+    border-radius: 10px !important;
+    height: 52px !important;
+}
 div[data-testid="stTextArea"] > div > textarea {
     font-size: 18px !important;
     padding: 14px 16px !important;
     border-radius: 10px !important;
+    min-height: 120px !important;
 }
 button[kind="primary"] {
     font-size: 18px !important;
     padding: 14px !important;
+    height: 56px !important;
+}
+/* Garante mesma largura */
+div[data-testid="stVerticalBlock"] > div {
+    width: 100% !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -70,7 +81,7 @@ if not lat or not lon:
     """
     st.components.v1.html(html_botao, height=160)
 
-# === FORMULÁRIO ===
+# === FORMULÁRIO — TAMANHOS IGUAIS ===
 with st.form("alerta"):
     nome = st.text_input("👤 Seu Nome / Razão Social")
     
@@ -81,7 +92,7 @@ with st.form("alerta"):
         lon = st.text_input("📍 Longitude", value=lon)
     
     endereco = st.text_input("🏠 Endereço Completo", value=endereco_auto)
-    obs = st.text_area("📝 O que está acontecendo?", height=150)
+    obs = st.text_area("📝 O que está acontecendo?", height=120)
     
     enviar = st.form_submit_button("🚨 ENVIAR ALERTA", type="primary", use_container_width=True)
 
@@ -111,4 +122,3 @@ if enviar:
             st.error(f"❌ Erro {resp.status_code}")
 
 st.caption("GECOM Segurança · Emergência: 190")
-            
