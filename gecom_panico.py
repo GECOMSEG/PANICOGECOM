@@ -60,28 +60,7 @@ if not lat or not lon:
 
 # === FORMULÁRIO ===
 
-# === ENVIO ===
-if enviar:
-    if not nome:
-        st.error("❌ Digite seu nome!")
-    else:
-        dados = {
-            "nome": nome,
-            "hora": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-            "endereco": endereco or "Não informado",
-            "lat": lat,
-            "lon": lon,
-            "obs": obs,
-            "mapa": f"https://www.google.com/maps/search/?api=1&query={lat},{lon}" if lat and lon else ""
-        }
-        
-        resp = requests.post(API_URL, json=dados, headers=headers)
-        
-        if resp.status_code in [200, 201]:
-            st.success("✅ ALERTA ENVIADO PARA A CENTRAL!")
-            st.balloons()
-            if lat and lon:
-                st.markdown(f"🔗 [Ver no Mapa]({dados['mapa']})")
+
         else:
             st.error(f"❌ Erro {resp.status_code}")
 
