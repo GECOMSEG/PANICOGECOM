@@ -165,5 +165,5 @@ else:
         st.error(f"❌ Erro: {resp.text[:250]}")
 
 st.divider()
-st.caption("GECOM SEGURANÇA ME· PROTEÇÃO MÁXIMA· EMERGÊNCIA: (51)99846.3372")")
+st.caption("GECOM SEGURANÇA ME· PROTEÇÃO MÁXIMA· EMERGÊNCIA: (51)99846.3372")
     
