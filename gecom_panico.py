@@ -59,8 +59,41 @@ if not lat or not lon:
     
 
 # === FORMULÁRIO ===
+nome = st.text_input("👤 Seu Nome / Razão Social")
 
+col1, col2 = st.columns(2)
+with col1:
+    lat = st.text_input("📍 Latitude", value=lat)
+with col2:
+    lon = st.text_input("📍 Longitude", value=lon)
 
+endereco = st.text_input("🏠 Endereço Completo", value=endereco_auto)
+obs = st.text_area("📝 O que está acontecendo?", height=150)
+
+enviar = st.button("🚨 ENVIAR ALERTA", type="primary", use_container_width=True)
+
+# === ENVIO ===
+if enviar:
+    if not nome:
+        st.error("❌ Digite seu nome!")
+    else:
+        dados = {
+            "nome": nome,
+            "hora": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+            "endereco": endereco or "Não informado",
+            "lat": lat,
+            "lon": lon,
+            "obs": obs,
+            "mapa": f"https://www.google.com/maps/search/?api=1&query={lat},{lon}" if lat and lon else ""
+        }
+        
+        resp = requests.post(API_URL, json=dados, headers=headers)
+        
+        if resp.status_code in [200, 201]:
+            st.success("✅ ALERTA ENVIADO PARA A CENTRAL!")
+            st.balloons()
+            if lat and lon:
+                st.markdown(f"🔗 [Ver no Mapa]({dados['mapa']})")
         else:
             st.error(f"❌ Erro {resp.status_code}")
 
