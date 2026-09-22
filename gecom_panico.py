@@ -15,18 +15,29 @@ headers = {
     "Content-Type": "application/json"
 }
 
+# === PEGA VALORES DA URL E GUARDA ===
+lat = st.query_params.get("lat", "")
+lon = st.query_params.get("lon", "")
+
+# Força atualização nos campos
+if lat and "lat_salvo" not in st.session_state:
+    st.session_state.lat_salvo = lat
+    st.session_state.lon_salvo = lon
+    st.rerun()  # ✅ Recarrega com os valores carregados
+
+# Usa os valores guardados
+lat_final = st.session_state.get("lat_salvo", lat)
+lon_final = st.session_state.get("lon_salvo", lon)
+
+# === INTERFACE ===
 st.title("🚨 GECOM SEGURANÇA — Emergência")
 st.subheader("Proteção Máxima · Campo Bom / RS")
 st.divider()
 
-# === LEITURA DOS DADOS DA URL ===
-lat = st.query_params.get("lat", "")
-lon = st.query_params.get("lon", "")
-
-if lat and lon:
-    st.success(f"✅ Localização obtida!")
+if lat_final and lon_final:
+    st.success("✅ Localização carregada automaticamente!")
 else:
-    st.info("📍 Clique em PERMITIR quando o navegador pedir!")
+    st.info("📍 Buscando sua localização... permita quando solicitado!")
     st.components.v1.html("""
 <script>
 if (navigator.geolocation) {
@@ -38,13 +49,16 @@ if (navigator.geolocation) {
             window.location.href = url.toString();
         },
         function(erro) {
-            console.log("GPS indisponível");
+            alert("Não foi possível detectar localização. Preencha manualmente.");
         },
-        {enableHighAccuracy: true, timeout: 10000}
+        {enableHighAccuracy: true, timeout: 8000}
     );
+} else {
+    alert("Navegador não suporta GPS. Preencha manualmente.");
 }
 </script>
 """, height=0)
+    st.stop()  # Espera recarregar com os dados
 
 # === FORMULÁRIO ===
 with st.form("chamada"):
@@ -52,16 +66,16 @@ with st.form("chamada"):
     
     col1, col2 = st.columns(2)
     with col1:
-        lat = st.text_input("📍 Latitude", value=lat)
+        lat = st.text_input("📍 Latitude", value=lat_final)
     with col2:
-        lon = st.text_input("📍 Longitude", value=lon)
+        lon = st.text_input("📍 Longitude", value=lon_final)
     
     endereco = st.text_input("🏠 Endereço Completo")
     obs = st.text_area("📝 O que está acontecendo?")
     
     enviar = st.form_submit_button("🚨 ENVIAR ALERTA", type="primary", use_container_width=True)
 
-# === ENVIO — SEM ACENTO NOS CAMPOS ===
+# === ENVIO ===
 if enviar:
     if not nome:
         st.error("❌ Digite seu nome!")
@@ -69,7 +83,7 @@ if enviar:
         dados = {
             "nome": nome,
             "hora": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-            "endereco": endereco or "Não informado",  # ✅ SEM ACENTO!
+            "endereco": endereco or "Não informado",
             "lat": lat,
             "lon": lon,
             "obs": obs,
@@ -81,6 +95,9 @@ if enviar:
         if resp.status_code in [200, 201]:
             st.success("✅ ALERTA ENVIADO PARA A CENTRAL!")
             st.balloons()
+            # Limpa para novo envio
+            st.session_state.pop("lat_salvo", None)
+            st.session_state.pop("lon_salvo", None)
         else:
             st.error(f"❌ Erro {resp.status_code}: {resp.text}")
 
