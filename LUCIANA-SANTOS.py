@@ -88,7 +88,7 @@ if not lat or not lon:
             function(sucesso) {
                 // Pega localização → recarrega → já envia tudo
                 window.location.href = window.location.origin + window.location.pathname + 
-                    "?nome=LUCIANA-SANTOS" +
+                    "?nome=LUCIANA-SANTOS.py" +
                     "&lat=" + sucesso.coords.latitude + 
                     "&lon=" + sucesso.coords.longitude;
             },
