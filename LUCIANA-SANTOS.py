@@ -3,7 +3,7 @@ import requests
 from datetime import datetime
 
 st.set_page_config(
-    page_title="GECOM — PÂNICO",
+    page_title="GECOM — Pânico",
     page_icon="🚨",
     layout="centered",
     initial_sidebar_state="collapsed"
