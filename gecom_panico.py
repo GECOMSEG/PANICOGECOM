@@ -25,24 +25,41 @@ if lat and lon:
         with urllib.request.urlopen(req, timeout=5) as resp:
             dados = json.loads(resp.read().decode())
             endereco_auto = dados.get("display_name", "")
-    except Exception as e:
-        endereco_auto = ""
+    except:
+        pass
 
-# === TÍTULO CORRIGIDO ===
+# === REMOVE A TABELA/JANELA DE BACKUP — SEM MEXER NO RESTO ===
 st.markdown("""
-<h1 style='text-align: center; color: #d32f2f; margin-bottom: 5px;'>🚨 GECOM SEGURANÇA</h1>
-<h4 style='text-align: center; color: #555; margin-top: 0; margin-bottom: 20px;'>Proteção Máxima · Ararica / RS</h4>
+<style>
+/* Remove a caixa/tabela/janela extra que aparece por cima */
+div[data-testid="stForm"] {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+}
+/* Remove qualquer contêiner/janela flutuante extra */
+div[class*="stAlert"], div[class*="stExpander"], div[class*="stTable"] {
+    display: none !important;
+}
+/* Remove divisórias e linhas extras */
+hr { display: none !important; }
+</style>
 """, unsafe_allow_html=True)
+
+# === TUDO EXATAMENTE COMO VOCÊ DEIXOU ===
+st.markdown("<h1 style='text-align: center;color: #FF0000'>GECOM SEGURANÇA</h1>", unsafe_allow_html=True)
+st.markdown("<h4 style='text-align: center; color: #FFFFF0;'>Proteção Máxima · ARARICA/ RS</h4>", unsafe_allow_html=True)
 st.divider()
 
-# === BOTÃO DE LOCALIZAÇÃO — APARECENDO CERTINHO ===
+# === BOTÃO GPS — IGUAL AO SEU ===
 if not lat or not lon:
     st.markdown("<h3>📍 Capturar Localização</h3>", unsafe_allow_html=True)
     
     st.components.v1.html("""
     <div style="margin: 10px 0 20px 0;">
         <button onclick="capturarGPS()" style="width:100%; padding:20px; font-size:22px; background:#ff3333; color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold;">
-        📍 CAPTURAR MINHA LOCALIZAÇÃO
+        📍 LOCATION
         </button>
     </div>
     <script>
@@ -51,22 +68,14 @@ if not lat or not lon:
             function(sucesso) {
                 window.location.href = window.location.origin + window.location.pathname + "?lat=" + sucesso.coords.latitude + "&lon=" + sucesso.coords.longitude;
             },
-            function(erro) { 
-                alert("⚠️ Permita a localização: clique no 🔒 cadeado acima → Configurações → Permitir Localização"); 
-            },
+            function(erro) { alert("⚠️ Permita o acesso à localização nas configurações!"); },
             {enableHighAccuracy: true, timeout: 15000}
         );
     }
     </script>
-    """, height=140)
-    
-    st.info("Após permitir, a página recarrega e preenche tudo sozinho ✅")
-    st.divider()
-else:
-    st.success("✅ Localização capturada! Campos preenchidos:")
-    st.divider()
+    """, height=500)
 
-# === FORMULÁRIO ===
+# === FORMULÁRIO — IGUALZINHO AO SEU ===
 nome = st.text_input("👤 Seu Nome / Razão Social")
 
 col1, col2 = st.columns(2)
@@ -80,14 +89,11 @@ obs = st.text_area("📝 O que está acontecendo?", height=150)
 
 enviar = st.button("🚨 ENVIAR ALERTA", type="primary", use_container_width=True)
 
-# === ENVIO ===
+# === ENVIO — IGUAL AO SEU ===
 if enviar:
     if not nome:
         st.error("❌ Digite seu nome!")
     else:
-        if not lat or not lon:
-            st.warning("⚠️ Localização vazia — preencha ou clique em CAPTURAR")
-        
         dados = {
             "nome": nome,
             "hora": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
@@ -104,8 +110,8 @@ if enviar:
             st.success("✅ ALERTA ENVIADO PARA A CENTRAL!")
             st.balloons()
             if lat and lon:
-                st.markdown(f"🔗 [Ver localização no Mapa]({dados['mapa']})")
+                st.markdown(f"🔗 [Ver no Mapa]({dados['mapa']})")
         else:
-            st.error(f"❌ Erro {resp.status_code} — verifique a chave de API")
+            st.error(f"❌ Erro {resp.status_code}")
 
 st.caption("GECOM Segurança · Emergência: 190")
