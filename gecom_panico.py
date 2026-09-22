@@ -41,9 +41,6 @@ button[kind="primary"] {
     font-size: 18px !important;
     padding: 14px !important;
 }
-/* Remove espaços e avisos extras */
-div[data-testid="stAlert"] { display: none; }
-hr { display: none; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -53,12 +50,65 @@ st.markdown("""
 <h4 style='text-align: center; color: #555; margin-top: 0; margin-bottom: 25px;'>Proteção Máxima · Campo Bom / RS</h4>
 """, unsafe_allow_html=True)
 
-# === SÓ BOTÃO SE NÃO TIVER GPS ===
+# === BOTÃO GPS ===
 if not lat or not lon:
-    st.components.v1.html("""
-<button onclick="capturarGPS()" style="width:100%; padding:18px; font-size:20px; background:#ff3333; color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold; margin-bottom:20px;">
-📍 CAPTURAR MINHA LOCALIZAÇÃO
-</button>
+    html_botao = """
+    <button onclick="capturarGPS()" style="width:100%; padding:18px; font-size:20px; background:#ff3333; color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold; margin-bottom:20px;">
+    📍 CAPTURAR MINHA LOCALIZAÇÃO
+    </button>
+    <script>
+    function capturarGPS() {
+        navigator.geolocation.getCurrentPosition(
+            function(sucesso) {
+                window.location.href = window.location.origin + window.location.pathname + "?lat=" + sucesso.coords.latitude + "&lon=" + sucesso.coords.longitude;
+            },
+            function(erro) {},
+            {enableHighAccuracy: true, timeout: 15000}
+        );
+    }
+    </script>
+    """
+    st.components.v1.html(html_botao, height=160)
 
+# === FORMULÁRIO ===
+with st.form("alerta"):
+    nome = st.text_input("👤 Seu Nome / Razão Social")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        lat = st.text_input("📍 Latitude", value=lat)
+    with col2:
+        lon = st.text_input("📍 Longitude", value=lon)
+    
+    endereco = st.text_input("🏠 Endereço Completo", value=endereco_auto)
+    obs = st.text_area("📝 O que está acontecendo?", height=150)
+    
+    enviar = st.form_submit_button("🚨 ENVIAR ALERTA", type="primary", use_container_width=True)
+
+# === ENVIO ===
+if enviar:
+    if not nome:
+        st.error("❌ Digite seu nome!")
+    else:
+        dados = {
+            "nome": nome,
+            "hora": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+            "endereco": endereco or "Não informado",
+            "lat": lat,
+            "lon": lon,
+            "obs": obs,
+            "mapa": f"https://www.google.com/maps/search/?api=1&query={lat},{lon}" if lat and lon else ""
+        }
+        
+        resp = requests.post(API_URL, json=dados, headers=headers)
+        
+        if resp.status_code in [200, 201]:
+            st.success("✅ ALERTA ENVIADO PARA A CENTRAL!")
+            st.balloons()
+            if lat and lon:
+                st.markdown(f"🔗 [Ver no Mapa]({dados['mapa']})")
+        else:
+            st.error(f"❌ Erro {resp.status_code}")
 
 st.caption("GECOM Segurança · Emergência: 190")
+            
