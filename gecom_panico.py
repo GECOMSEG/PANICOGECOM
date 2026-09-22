@@ -1,15 +1,16 @@
 import streamlit as st
 from datetime import datetime
+import json
 
 st.set_page_config(page_title="GECOM Pânico", layout="wide", initial_sidebar_state="expanded")
 
 # =============================================
-# ARMAZENAMENTO COMPARTILHADO (todos veem)
+# BANCO COMPARTILHADO — TODOS VEEM OS MESMOS ALERTAS
 # =============================================
 
-# Usamos variável global simulada
-if "base_alertas" not in st.session_state:
-    st.session_state.base_alertas = []
+# Inicializa banco centralizado
+if "db_alertas" not in st.session_state:
+    st.session_state.db_alertas = []
 
 # ========== MENU LATERAL ==========
 pagina = st.sidebar.radio("Acesso:", [
@@ -55,7 +56,7 @@ if pagina == "📲 Cliente — Enviar Alerta":
             agora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
             tem_local = bool(lat and lon and lat.strip() and lon.strip())
             
-            novo = {
+            novo_alerta = {
                 "nome": nome,
                 "hora": agora,
                 "lat": lat if tem_local else "Indisponível",
@@ -65,8 +66,8 @@ if pagina == "📲 Cliente — Enviar Alerta":
                 "mapa": f"https://www.google.com/maps?q={lat},{lon}" if tem_local else None
             }
             
-            # Adiciona na base COMPARTILHADA
-            st.session_state.base_alertas.insert(0, novo)
+            # Salva na base compartilhada
+            st.session_state.db_alertas.insert(0, novo_alerta)
             st.success("✅ ALERTA ENVIADO PARA A CENTRAL!")
             st.balloons()
 
@@ -78,32 +79,34 @@ else:
         <hr style='border:2px solid green;'>
     """, unsafe_allow_html=True)
 
-    st.rerun()  # Atualiza a página automaticamente
+    # ⚠️ IMPORTANTE: Atualiza a página para buscar novos alertas
+    st.rerun()
 
-    alertas = st.session_state.base_alertas
+    # Pega alertas da base compartilhada
+    alertas = st.session_state.db_alertas
 
     if not alertas:
-        st.info("✅ Sistema operacional — Nenhum alerta recebido")
+        st.info("✅ Sistema online — Nenhum alerta recebido no momento")
     else:
         st.warning(f"⚠️ {len(alertas)} ALERTA(S) RECEBIDO(S)!")
         
-        for num, a in enumerate(alertas, 1):
+        for numero, alerta in enumerate(alertas, 1):
             st.markdown(f"""
-            <div style='background:#fff3cd;padding:15px;border-radius:8px;border-left:5px solid red;margin-bottom:10px;'>
-            <h4>🚨 ALERTA #{num}</h4>
-            <p><strong>👤 Cliente:</strong> {a['nome']}</p>
-            <p><strong>🕐 Hora:</strong> {a['hora']}</p>
-            <p><strong>🏠 Endereço:</strong> {a['endereco']}</p>
-            <p><strong>📍 Coordenadas:</strong> {a['lat']} / {a['lon']}</p>
-            <p><strong>📝 Situação:</strong> {a['obs']}</p>
+            <div style='background:#fff3cd;padding:15px;border-radius:8px;border-left:5px solid red;margin-bottom:12px;'>
+            <h4>🚨 ALERTA #{numero}</h4>
+            <p><strong>👤 Cliente:</strong> {alerta['nome']}</p>
+            <p><strong>🕐 Hora:</strong> {alerta['hora']}</p>
+            <p><strong>🏠 Endereço:</strong> {alerta['endereco']}</p>
+            <p><strong>📍 Coordenadas:</strong> {alerta['lat']} / {alerta['lon']}</p>
+            <p><strong>📝 Situação:</strong> {alerta['obs']}</p>
             </div>
             """, unsafe_allow_html=True)
             
-            if a['mapa']:
-                st.markdown(f"[🗺️ ABRIR MAPA → {a['nome']}]({a['mapa']})")
+            if alerta['mapa']:
+                st.markdown(f"[🗺️ ABRIR MAPA → {alerta['nome']}]({alerta['mapa']})")
             st.divider()
 
     if st.button("🗑️ Limpar Todos os Alertas"):
-        st.session_state.base_alertas = []
+        st.session_state.db_alertas = []
         st.rerun()
-    
+        
