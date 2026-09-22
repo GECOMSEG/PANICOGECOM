@@ -140,4 +140,3 @@ with st.spinner("Carregando..."):
 
 st.divider()
 st.caption("GECOM Segurança · Notificações Push Ativadas · Emergência: 190")
-                                    
