@@ -79,7 +79,7 @@ window.addEventListener('load', async () => {{
 # === TÍTULO ===
 st.markdown("""
 <h1 style='text-align:center;color:#ff0000;margin:0
-5rem 0;'>🚨GECOM SEGURANÇA</h1>
+0.3rem 0;'>🚨GECOM SEGURANÇA</h1>
 <p style='text-align:center;'>PROTEÇÃO MÁXIMA ✅</p>
 """, unsafe_allow_html=True)
 
