@@ -28,19 +28,20 @@ if lat and lon:
     except:
         pass
 
-# === TÍTULO — EXATAMENTE COMO VOCÊ TEM ===
+# === TÍTULO ===
 st.markdown("<h1 style='text-align: center;color: #FF0000'>GECOM SEGURANÇA</h1>", unsafe_allow_html=True)
 st.markdown("<h4 style='text-align: center; color: #FFFFF0;'>Proteção Máxima · ARARICA/ RS</h4>", unsafe_allow_html=True)
 st.divider()
 
-# === BOTÃO DE LOCALIZAÇÃO — APARECE SEMPRE ===
+# === BOTÃO — AGORA APARECENDO CERTINHO ===
 if not lat or not lon:
     st.markdown("<h3>📍 Capturar Localização</h3>", unsafe_allow_html=True)
     
+    # BOTÃO COM ALTURA CERTA — NÃO SOMBRECE MAIS
     st.components.v1.html("""
-    <div style="margin: 10px 0 20px 0;">
-        <button onclick="capturarGPS()" style="width:100%; padding:20px; font-size:22px; background:#ff3333; color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold;">
-        📍 LOCATION
+    <div style="margin: 10px 0 10px 0;">
+        <button onclick="capturarGPS()" style="width:100%; padding:18px; font-size:20px; background:#ff3333; color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold;">
+        📍 CAPTURAR LOCALIZAÇÃO
         </button>
     </div>
     <script>
@@ -49,32 +50,34 @@ if not lat or not lon:
             function(sucesso) {
                 window.location.href = window.location.origin + window.location.pathname + "?lat=" + sucesso.coords.latitude + "&lon=" + sucesso.coords.longitude;
             },
-            function(erro) { alert("⚠️ Permita o acesso à localização nas configurações!"); },
+            function(erro) { 
+                alert("⚠️ Permita a localização: clique no 🔒 cadeado na barra de endereço → Permitir"); 
+            },
             {enableHighAccuracy: true, timeout: 15000}
         );
     }
     </script>
-    """, height=500)
+    """, height=120)  # ↓ Altura ajustada — botão aparece completo!
     
-    st.info("Clique no botão acima para preencher os dados automaticamente ✅")
+    st.info("Clique no botão vermelho acima 🔴 → permita localização → página recarrega sozinha ✅")
     st.divider()
 
-# === TABELA APARECE SÓ DEPOIS DO GPS — SEMPRE VISÍVEL QUANDO PREENCHIDA ===
-dados_capturados = bool(lat and lon)
+# === TABELA — SÓ APARECE DEPOIS DO GPS ===
+tem_localizacao = bool(lat and lon)
 
-if dados_capturados:
+if tem_localizacao:
     st.markdown("### 📋 Dados da Localização")
-    st.success("✅ Localização capturada pelo GPS")
+    st.success("✅ Capturado pelo GPS")
     st.write("**📍 Latitude:**", lat)
     st.write("**📍 Longitude:**", lon)
-    st.write("**🏠 Endereço Completo:**", endereco_auto)
+    st.write("**🏠 Endereço:**", endereco_auto)
     st.divider()
 
-# === FORMULÁRIO — SÓ NOME + DESCRIÇÃO ===
+# === FORMULÁRIO — SEM CAMPOS DUPLICADOS ===
 nome = st.text_input("👤 Seu Nome / Razão Social")
 obs = st.text_area("📝 O que está acontecendo?", height=150)
 
-enviar = st.button("🚨 ENVIAR ALERTA", type="primary", use_container_width=True, disabled=not dados_capturados)
+enviar = st.button("🚨 ENVIAR ALERTA", type="primary", use_container_width=True, disabled=not tem_localizacao)
 
 # === ENVIO ===
 if enviar:
@@ -101,3 +104,4 @@ if enviar:
             st.error(f"❌ Erro {resp.status_code}")
 
 st.caption("GECOM Segurança · Emergência: 190")
+    
