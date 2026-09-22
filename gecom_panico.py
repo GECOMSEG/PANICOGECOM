@@ -2,7 +2,12 @@ import streamlit as st
 import requests
 from datetime import datetime
 
-st.set_page_config(page_title="GECOM — Emergência", page_icon="🚨", layout="centered")
+st.set_page_config(
+    page_title="GECOM — Pânico",
+    page_icon="🚨",
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
 
 API_URL = "https://hbyqdrewpzjupzyukyts.supabase.co/rest/v1/alertas"
 CHAVE = "sb_publishable_t2iYYcgneXOXD9JPW5GcnQ_BisRaVZS"
@@ -13,6 +18,24 @@ headers = {
     "Content-Type": "application/json"
 }
 
+# === PWA — INSTALAÇÃO COMO APP DE VERDADE ===
+st.components.v1.html("""
+<meta name="theme-color" content="#ff0000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="GECOM">
+
+<!-- Manifesto → faz aparecer "Instalar" -->
+<link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiR0VDT00gU8OAbmljbyIsInNob3J0X25hbWUiOiJHRUNPTSIsImRlc2NyaXB0aW9uIjoiQm90w6FvIGRlIFDDoW5pY28gLSBHZWNvbSBTZWd1cmFuY2EiLCJzdGFydF91cmwiOiIvIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzAwMDAwMCIsInRoZW1lX2NvbG9yIjoiI2ZmMDAwMCIsImljb25zIjpbeyJzcmMiOiJodHRwczovL3ZpYS5wbGFjZWhvbGRlci5jb20vMTkyL0ZGMDAwMC9GRkZGRkY/dGV4dD1HIiwic2l6ZXMiOiIxOTJ8MTkyIiwidHlwZSI6ImltYWdlL3BuZyJdfV0=">
+
+<style>
+/* Esconde tudo que não é do app */
+[data-testid="stToolbar"], .stAppHeader, footer, .stDeployButton { display: none !important; }
+.block-container { padding-top: 0.5rem !important; }
+</style>
+""", height=0)
+
+# === PEGAR LOCALIZAÇÃO ===
 lat = st.query_params.get("lat", "")
 lon = st.query_params.get("lon", "")
 
@@ -26,92 +49,107 @@ if lat and lon:
             dados = json.loads(resp.read().decode())
             endereco_auto = dados.get("display_name", "")
     except:
-        pass
+        endereco_auto = f"{lat}, {lon}"
 
-# === REMOVE A TABELA/JANELA DE BACKUP — SEM MEXER NO RESTO ===
+# === TELA PRINCIPAL ===
 st.markdown("""
-<style>
-/* Remove a caixa/tabela/janela extra que aparece por cima */
-div[data-testid="stForm"] {
-    border: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
-    padding: 0 !important;
-}
-/* Remove qualquer contêiner/janela flutuante extra */
-div[class*="stAlert"], div[class*="stExpander"], div[class*="stTable"] {
-    display: none !important;
-}
-/* Remove divisórias e linhas extras */
-hr { display: none !important; }
-</style>
+<h1 style='text-align:center;color:red;font-size:28px;margin:5px 0;'>🚨 GECOM SEGURANÇA</h1>
+<p style='text-align:center;margin:5px 0 15px;'>Botão de Pânico</p>
 """, unsafe_allow_html=True)
 
-# === TUDO EXATAMENTE COMO VOCÊ DEIXOU ===
-st.markdown("<h1 style='text-align: center;color: #FF0000'>GECOM SEGURANÇA</h1>", unsafe_allow_html=True)
-st.markdown("<h4 style='text-align: center; color: #FFFFF0;'>Proteção Máxima · ARARICA/ RS</h4>", unsafe_allow_html=True)
-st.divider()
-
-# === BOTÃO GPS — IGUAL AO SEU ===
+# === PASSO 1 — CAPTURAR LOCALIZAÇÃO ===
 if not lat or not lon:
-    st.markdown("<h3>CLICK AQUI</h3>", unsafe_allow_html=True)
+    st.markdown("""
+    <div style='text-align:center;padding:20px 10px;'>
+    <h3 style='color:#333;'>📍 Permita sua localização</h3>
+    <p style='color:#666;'>Precisamos saber onde você está para enviar o alerta</p>
+    </div>
+    """, unsafe_allow_html=True)
     
     st.components.v1.html("""
-    <div style="margin: 10px 0 20px 0;">
-        <button onclick="capturarGPS()" style="width:100%; padding:20px; font-size:22px; background:#ff3333; color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold;">
-        📍 LOCATION
+    <div style="display:flex;justify-content:center;margin:20px 0;">
+        <button onclick="pegarLocalizacao()" style="width:85%;max-width:320px;padding:25px 20px;font-size:22px;background:#ff3333;color:white;border:none;border-radius:16px;font-weight:bold;box-shadow:0 4px 12px rgba(255,0,0,0.3);">
+        📍 ENVIAR LOCALIZAÇÃO
         </button>
     </div>
     <script>
-    function capturarGPS() {
+    function pegarLocalizacao() {
+        if (!navigator.geolocation) {
+            alert("⚠️ Seu navegador não suporta localização");
+            return;
+        }
         navigator.geolocation.getCurrentPosition(
             function(sucesso) {
-                window.location.href = window.location.origin + window.location.pathname + "?lat=" + sucesso.coords.latitude + "&lon=" + sucesso.coords.longitude;
+                window.location.href = window.location.origin + window.location.pathname + 
+                    "?lat=" + sucesso.coords.latitude + 
+                    "&lon=" + sucesso.coords.longitude;
             },
-            function(erro) { alert("⚠️ Permita o acesso à localização nas configurações!"); },
-            {enableHighAccuracy: true, timeout: 15000}
+            function(erro) {
+                let msg = "⚠️ Não foi possível obter localização\\n";
+                if (erro.code === 1) msg += "Toque no 🔒 cadeado → Permitir localização";
+                else if (erro.code === 2) msg += "Sinal de GPS fraco — tente ao ar livre";
+                else if (erro.code === 3) msg += "Tempo esgotado — tente de novo";
+                alert(msg);
+            },
+            {enableHighAccuracy: true, timeout: 15000, maximumAge: 0}
         );
     }
     </script>
-    """, height=500)
+    """, height=180)
+    
+    st.info("💡 Depois de permitir, a página recarrega sozinha")
+    st.stop()
 
-# === FORMULÁRIO — IGUALZINHO AO SEU ===
-nome = st.text_input("👤 Seu Nome / Razão Social")
+# === PASSO 2 — BOTÃO DE PÂNICO ===
+st.success("✅ Localização confirmada!")
 
-col1, col2 = st.columns(2)
-with col1:
-    lat = st.text_input("📍 Latitude", value=lat)
-with col2:
-    lon = st.text_input("📍 Longitude", value=lon)
+st.markdown(f"""
+<div style='background:#fff0f0;border-left:4px solid #ff3333;padding:10px 12px;border-radius:6px;margin:15px 0;'>
+<strong>📍 Sua posição:</strong><br>
+{endereco_auto or f"{lat}, {lon}"}
+</div>
+""", unsafe_allow_html=True)
 
-endereco = st.text_input("🏠 Endereço Completo", value=endereco_auto)
-obs = st.text_area("📝 O que está acontecendo?", height=150)
+st.markdown("<h2 style='text-align:center;color:#333;margin:20px 0 10px;'>Toque abaixo para acionar</h2>", unsafe_allow_html=True)
 
-enviar = st.button("🚨 ENVIAR ALERTA", type="primary", use_container_width=True)
-
-# === ENVIO — IGUAL AO SEU ===
-if enviar:
-    if not nome:
-        st.error("❌ Digite seu nome!")
-    else:
+# === BOTÃO GIGANTE DE PÂNICO ===
+if st.button("🚨 PÂNICO", type="primary", use_container_width=True):
+    with st.spinner("Enviando alerta para a central..."):
+        mapa_link = f"https://www.google.com/maps/search/?api=1&query={lat},{lon}"
+        
         dados = {
-            "nome": nome,
+            "nome": "ALERTA DE PÂNICO",
             "hora": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-            "endereco": endereco or "Não informado",
+            "endereço": endereco_auto or f"{lat}, {lon}",
             "lat": lat,
             "lon": lon,
-            "obs": obs,
-            "mapa": f"https://www.google.com/maps/search/?api=1&query={lat},{lon}" if lat and lon else ""
+            "obs": "Usuário acionou o botão de pânico — ATENÇÃO URGENTE!",
+            "mapa": mapa_link
         }
         
         resp = requests.post(API_URL, json=dados, headers=headers)
         
         if resp.status_code in [200, 201]:
-            st.success("✅ ALERTA ENVIADO PARA A CENTRAL!")
             st.balloons()
-            if lat and lon:
-                st.markdown(f"🔗 [Ver no Mapa]({dados['mapa']})")
+            st.markdown("""
+            <div style='background:linear-gradient(135deg,#ff0000,#cc0000);color:white;padding:30px 20px;border-radius:16px;text-align:center;margin:20px 0;'>
+            <h2 style='margin:0;font-size:24px;'>✅ ALERTA ENVIADO!</h2>
+            <p style='font-size:16px;margin:10px 0 0;'>A central foi notificada<br>Em breve alguém irá até você</p>
+            </div>
+            """, unsafe_allow_html=True)
+            st.markdown(f"🔗 [Ver localização no Mapa]({mapa_link})")
         else:
-            st.error(f"❌ Erro {resp.status_code}")
+            st.error(f"❌ Erro ao enviar: {resp.status_code} — tente novamente")
 
-st.caption("GECOM Segurança · Emergência: 190")
+st.divider()
+
+# === INSTRUÇÃO DE INSTALAÇÃO ===
+st.markdown("""
+### 📲 Instalar na Tela Inicial
+- **Android:** toque nos **3 pontinhos ⋮** → **Instalar app** ✅
+- **iPhone:** toque em **Compartilhar ⬆️** → **Adicionar à Tela de Início** ✅
+
+Abre direto pelo ícone **GECOM** — sem navegador!
+""")
+
+st.caption("GECOM Segurança · Botão de Pânico · Emergência: 190")
