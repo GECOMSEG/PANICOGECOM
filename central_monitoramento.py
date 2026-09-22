@@ -18,10 +18,10 @@ st.title("🚨 CENTRAL DE MONITORAMENTO — GECOM SEGURANÇA")
 st.subheader("Proteção Máxima · Campo Bom / RS")
 st.divider()
 
-# === URL CERTA DO SEU PROJETO ===
+# === URL CERTA — COPIADA DO SEU SUPABASE ===
 API_URL = "https://hbyqdwepwzpjupzyukyts.supabase.co/rest/v1/alertas"
-CHAVE = "https://hbyqdwepwzpjupzyukyts.supabase.co/rest/v1/alertas"
-# ================================
+CHAVE = "COLA_SUA_CHAVE_AQUI"
+# ===========================================
 
 headers = {
     "apikey": CHAVE,
@@ -80,4 +80,3 @@ except Exception as e:
     st.error(f"❌ Falha: {str(e)}")
 
 st.caption("GECOM Segurança — Proteção Máxima · Emergência: 190")
-
