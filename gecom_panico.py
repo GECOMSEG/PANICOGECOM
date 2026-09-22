@@ -13,9 +13,11 @@ headers = {
     "Content-Type": "application/json"
 }
 
+# Pega da URL
 lat = st.query_params.get("lat", "")
 lon = st.query_params.get("lon", "")
 
+# Converte para endereço
 endereco_auto = ""
 if lat and lon:
     try:
@@ -28,7 +30,7 @@ if lat and lon:
     except:
         pass
 
-# === CAMPOS MAIORES ===
+# === ESTILO — CAMPOS MAIORES ===
 st.markdown("""
 <style>
 div[data-testid="stTextInput"] > div > input,
@@ -36,6 +38,10 @@ div[data-testid="stTextArea"] > div > textarea {
     font-size: 18px !important;
     padding: 14px 16px !important;
     border-radius: 10px !important;
+}
+button[kind="primary"] {
+    font-size: 18px !important;
+    padding: 14px !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -47,42 +53,44 @@ st.markdown("""
 <hr style='border: 1px solid #ddd; margin: 20px 0;'>
 """, unsafe_allow_html=True)
 
-# === BOTÃO DE LOCALIZAÇÃO ===
+# === BOTÃO GPS — PREENCHE NA HORA ===
 if not lat or not lon:
     st.info("📌 Clique para capturar sua localização:")
     
-    st.components.v1.html("""
+    st.components.v1.html(f"""
 <button onclick="capturarGPS()" style="width:100%; padding:18px; font-size:20px; background:#ff3333; color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold;">
 📍 CAPTURAR MINHA LOCALIZAÇÃO
 </button>
 <p id="status" style="margin-top:15px; color:#555; text-align:center;"></p>
 
 <script>
-function capturarGPS() {
+function capturarGPS() {{
     const status = document.getElementById("status");
     status.textContent = "🔄 Buscando...";
     
     navigator.geolocation.getCurrentPosition(
-        function(sucesso) {
-            const url = new URL(window.location.href);
-            url.searchParams.set("lat", sucesso.coords.latitude);
-            url.searchParams.set("lon", sucesso.coords.longitude);
-            window.location.href = url.toString();
-        },
-        function(erro) {
-            status.textContent = "";
-        },
-        {enableHighAccuracy: true, timeout: 15000}
+        function(sucesso) {{
+            // Recarrega a página com os valores
+            window.location.href = 
+                window.location.origin + 
+                window.location.pathname + 
+                "?lat=" + sucesso.coords.latitude + 
+                "&lon=" + sucesso.coords.longitude;
+        }},
+        function(erro) {{
+            status.textContent = "⚠️ Preencha manualmente abaixo";
+        }},
+        {{enableHighAccuracy: true, timeout: 15000}}
     );
-}
+}}
 </script>
 """, height=200)
 else:
-    st.success("✅ Localização capturada!")
+    st.success("✅ Localização capturada! Campos preenchidos:")
 
 st.divider()
 
-# === FORMULÁRIO — SEMPRE APARECE, SEM TEXTOS EXTRAS ===
+# === FORMULÁRIO — OS VALORES JÁ VÃO AQUI ===
 with st.form("alerta"):
     nome = st.text_input("👤 Seu Nome / Razão Social")
     
@@ -115,7 +123,7 @@ if enviar:
         resp = requests.post(API_URL, json=dados, headers=headers)
         
         if resp.status_code in [200, 201]:
-            st.success("✅ ALERTA ENVIADO!")
+            st.success("✅ ALERTA ENVIADO PARA A CENTRAL!")
             st.balloons()
             if lat and lon:
                 st.markdown(f"🔗 [Ver no Mapa]({dados['mapa']})")
@@ -123,4 +131,3 @@ if enviar:
             st.error(f"❌ Erro {resp.status_code}")
 
 st.caption("GECOM Segurança · Emergência: 190")
-            
