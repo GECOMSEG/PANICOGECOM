@@ -3,7 +3,7 @@ import requests
 from datetime import datetime
 
 st.set_page_config(
-    page_title="GECOM — Pânico",
+    page_title="GECOM — PÂNICO",
     page_icon="🚨",
     layout="centered",
     initial_sidebar_state="collapsed"
@@ -165,5 +165,5 @@ else:
         st.error(f"❌ Erro: {resp.text[:250]}")
 
 st.divider()
-st.caption("GECOM Segurança · Emergência: 190")
+st.caption("GECOM SEGURANÇA ME· PROTEÇÃO MÁXIMA· EMERGÊNCIA: (51)99846.3372")")
     
