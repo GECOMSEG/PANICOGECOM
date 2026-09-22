@@ -60,21 +60,5 @@ if not lat or not lon:
 📍 CAPTURAR MINHA LOCALIZAÇÃO
 </button>
 
-<script>
-function capturarGPS() {
-    navigator.geolocation.getCurrentPosition(
-        function(sucesso) {
-            window.location.href = 
-                window.location.origin + 
-                window.location.pathname + 
-                "?lat=" + sucesso.coords.latitude + 
-                "&lon=" + sucesso.coords.longitude;
-        },
-        function(erro) {},
-        {enableHighAccuracy: true, timeout: 15000}
-    );
-}
-</script>
-
 
 st.caption("GECOM Segurança · Emergência: 190")
