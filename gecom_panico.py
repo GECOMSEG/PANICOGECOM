@@ -6,13 +6,14 @@ st.set_page_config(page_title="GECOM Pânico", layout="wide")
 if "alertas" not in st.session_state:
     st.session_state.alertas = []
 
-# MENU LATERAL — AQUI APARECE A ESCOLHA
+# ========== MENU LATERAL ==========
 pagina = st.sidebar.radio("Acesso:", [
-    "📲 ENVIAR ALERTA — Cliente",
-    "📟 RECEBER ALERTAS — Central"
+    "📲 Cliente — Enviar Alerta",
+    "📟 Central — Receber Alertas"
 ])
 
-if pagina == "📲 ENVIAR ALERTA — Cliente":
+# ========== TELA CLIENTE ==========
+if pagina == "📲 Cliente — Enviar Alerta":
     st.markdown("<h1 style='text-align:center;color:red;'>🚨 BOTÃO DE PÂNICO</h1>", unsafe_allow_html=True)
     st.subheader("GECOM SEGURANÇA")
     st.divider()
@@ -35,7 +36,7 @@ if pagina == "📲 ENVIAR ALERTA — Cliente":
     </script>
     """, height=0)
 
-    endereco = st.text_input("🏠 Endereço")
+    endereco = st.text_input("🏠 Endereço / Referência")
     obs = st.text_area("📝 Situação")
     st.divider()
 
@@ -60,6 +61,7 @@ if pagina == "📲 ENVIAR ALERTA — Cliente":
             st.success("✅ ENVIADO PARA A CENTRAL!")
             st.balloons()
 
+# ========== TELA CENTRAL ==========
 else:
     st.markdown("<h1 style='text-align:center;color:green;'>📟 CENTRAL DE MONITORAMENTO</h1>", unsafe_allow_html=True)
     st.subheader("GECOM SEGURANÇA — ALERTAS RECEBIDOS")
@@ -70,7 +72,7 @@ else:
     if not st.session_state.alertas:
         st.info("✅ Sistema online — Nenhum alerta no momento")
     else:
-        st.warning(f"⚠️ {len(st.session_state.alertas)} ALERTA(S) RECEBIDO(S)!")
+        st.warning(f"⚠️ {len(st.session_state.alertas)} ALERTA(S)!")
         for n, a in enumerate(st.session_state.alertas, 1):
             st.markdown(f"""
             <div style='background:#fff3cd;padding:12px;border-radius:8px;border-left:5px solid red;'>
@@ -83,10 +85,9 @@ else:
             </div>
             """, unsafe_allow_html=True)
             if a['mapa']:
-                st.markdown(f"[🗺️ ABRIR MAPA → {a['nome']}]({a['mapa']})")
+                st.markdown(f"[🗺️ ABRIR MAPA]({a['mapa']})")
             st.divider()
 
-    if st.button("🗑️ Limpar Alertas"):
+    if st.button("🗑️ Limpar Lista"):
         st.session_state.alertas = []
         st.rerun()
-        
