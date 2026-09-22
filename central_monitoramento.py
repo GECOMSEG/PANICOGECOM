@@ -18,11 +18,10 @@ st.title("🚨 CENTRAL DE MONITORAMENTO — GECOM SEGURANÇA")
 st.subheader("Proteção Máxima · Campo Bom / RS")
 st.divider()
 
-# === URL CERTA — COPIADA DO SEU SUPABASE ===
-API_URL = "Project URL: https://hbyqdwepwzpjupzyukyts.supabase.co"
-"
+# === TUDO CERTO — NÃO ALTERAR AS ASPAS ===
+API_URL = "https://hbyqdwepwzpjupzyukyts.supabase.co/rest/v1/alertas"
 CHAVE = "sb_publishable_t2iYYcgneXOXD9JPW5GcnQ_BisRaVZS"
-# ===========================================
+# =========================================
 
 headers = {
     "apikey": CHAVE,
@@ -31,6 +30,7 @@ headers = {
 
 try:
     resp = requests.get(f"{API_URL}?order=id.desc&limit=50", headers=headers)
+    st.write(f"📡 Resposta: {resp.status_code}")
     
     if resp.status_code == 200:
         alertas = resp.json()
@@ -45,9 +45,9 @@ try:
         st.divider()
         
         if not alertas:
-            st.warning("⚠️ Conectado! Nenhum alerta registrado ainda.")
+            st.warning("⚠️ Conectado! Tabela vazia. Envie um alerta pelo App!")
         else:
-            st.success(f"✅ {len(alertas)} Alerta(s) Recebido(s)!")
+            st.success(f"✅ {len(alertas)} Alerta(s) Encontrado(s)!")
             for a in alertas:
                 nome = a.get("nome") or "Não informado"
                 hora = a.get("hora") or "—"
@@ -63,15 +63,12 @@ try:
                 st.markdown(f"### 🚨 {hora}")
                 st.markdown(f"**👤 Nome:** {nome}")
                 st.markdown(f"**📍 Endereço:** {endereco}")
-                
                 if lat and lon and lat != "EMPTY" and lon != "EMPTY":
-                    st.markdown(f"**📌 Localização:** [Abrir no Google Maps](https://www.google.com/maps/search/?api=1&query={lat},{lon})")
+                    st.markdown(f"**📌 Mapa:** [Abrir](https://www.google.com/maps/search/?api=1&query={lat},{lon})")
                 elif mapa:
                     st.markdown(f"**📌 Mapa:** {mapa}")
-                
                 if obs:
-                    st.markdown(f"**📝 Observações:** {obs}")
-                
+                    st.markdown(f"**📝 Obs:** {obs}")
                 st.markdown("</div>", unsafe_allow_html=True)
                 st.divider()
     else:
