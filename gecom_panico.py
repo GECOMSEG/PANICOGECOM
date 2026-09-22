@@ -1,68 +1,92 @@
 import streamlit as st
 import requests
 from datetime import datetime
+import json
 
-# === DADOS DO SEU PROJETO ===
+st.set_page_config(page_title="GECOM — Chamada de Emergência", page_icon="🚨", layout="centered")
+
+# === CONFIGURAÇÃO ===
 API_URL = "https://hbyqdrewpzjupzyukyts.supabase.co/rest/v1/alertas"
-CHAVE = "sb_publishable_t2iYYcgneXOXD9JPW5GcnQ_BisRaVZS"
-# =============================
+CHAVE = "COLA_A_PUBLISHABLE_KEY_AQUI"
+# =====================
 
-st.set_page_config(page_title="GECOM Alerta Panico", page_icon="🚨", layout="centered")
+headers = {
+    "apikey": CHAVE,
+    "Authorization": f"Bearer {CHAVE}",
+    "Content-Type": "application/json"
+}
 
-st.markdown("""
-<style>
-h1 {color: #cc0000; text-align: center;}
-div.stButton > button {background-color: #cc0000; color: white; font-size: 22px; height: 80px; width: 100%; border-radius: 12px;}
-</style>
-""", unsafe_allow_html=True)
-
-st.title("🚨 ALERTA DE PANICO — GECOM SEGURANCA")
-st.subheader("Protecao Maxima")
+st.title("🚨 GECOM SEGURANÇA — Emergência")
+st.subheader("Proteção Máxima · Campo Bom / RS")
 st.divider()
 
-nome = st.text_input("Seu Nome / Identificacao")
-col1, col2 = st.columns(2)
-with col1:
-    lat = st.text_input("Latitude")
-with col2:
-    lon = st.text_input("Longitude")
-endereco = st.text_input("Endereco / Referencia")
-obs = st.text_area("Observacoes")
+# === PEGA LOCALIZAÇÃO AUTOMÁTICA ===
+st.info("📍 Carregando sua localização...")
 
-if st.button("🚨 ENVIAR ALERTA AGORA", type="primary"):
-    if not nome:
-        st.error("⚠️ Digite seu nome!")
+# Usando JavaScript para pegar GPS
+localizacao = st.components.v1.html("""
+<script>
+navigator.geolocation.getCurrentPosition(
+    (pos) => {
+        const dados = {
+            lat: pos.coords.latitude,
+            lon: pos.coords.longitude,
+            precisao: pos.coords.accuracy
+        };
+        window.parent.postMessage({type: 'gps', dados: dados}, '*');
+    },
+    (erro) => {
+        window.parent.postMessage({type: 'erro', mensagem: 'Permita a localização!'}, '*');
+    },
+    {enableHighAccuracy: true, timeout: 5000, maximumAge: 0}
+);
+</script>
+""", height=0)
+
+# Campos preenchidos automaticamente
+if "lat" not in st.session_state:
+    st.session_state.lat = ""
+if "lon" not in st.session_state:
+    st.session_state.lon = ""
+if "endereco_auto" not in st.session_state:
+    st.session_state.endereco_auto = ""
+
+# Formulário
+with st.form("form_chamada"):
+    nome = st.text_input("👤 Seu Nome / Razão Social")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        lat = st.text_input("📍 Latitude", value=st.session_state.lat)
+    with col2:
+        lon = st.text_input("📍 Longitude", value=st.session_state.lon)
+    
+    endereco = st.text_input("🏠 Endereço", value=st.session_state.endereco_auto)
+    obs = st.text_area("📝 O que está acontecendo?")
+    
+    enviado = st.form_submit_button("🚨 ENVIAR ALERTA", type="primary", use_container_width=True)
+
+# Envia para a Central
+if enviado:
+    if not nome or not endereco:
+        st.error("❌ Preencha Nome e Endereço!")
     else:
-        with st.spinner("Enviando alerta..."):
-            hora_atual = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-            mapa_link = f"https://www.google.com/maps/search/?api=1&query={lat},{lon}" if lat and lon else ""
-            
-            dados = {
-                "nome": nome,
-                "hora": hora_atual,
-                "lat": lat,
-                "lon": lon,
-                "endereco": endereco,
-                "obs": obs,
-                "mapa": mapa_link
-            }
-            
-            cabecalhos = {
-                "apikey": CHAVE,
-                "Authorization": f"Bearer {CHAVE}",
-                "Content-Type": "application/json",
-                "Prefer": "return=minimal"
-            }
-            
-            resp = requests.post(API_URL, json=dados, headers=cabecalhos)
-            
-            if resp.status_code in (200, 201):
-                st.success("✅ ALERTA ENVIADO PARA A CENTRAL!")
-                st.info(f"Nome: {nome}\nHora: {hora_atual}\nEndereco: {endereco or 'Nao informado'}")
-                if mapa_link:
-                    st.markdown(f"[📍 Ver no Mapa]({mapa_link})")
-            else:
-                st.error(f"❌ Erro {resp.status_code}: {resp.text}")
+        dados = {
+            "nome": nome,
+            "hora": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+            "endereço": endereco,
+            "lat": lat,
+            "lon": lon,
+            "obs": obs,
+            "mapa": f"https://www.google.com/maps/search/?api=1&query={lat},{lon}" if lat and lon else ""
+        }
+        
+        resp = requests.post(API_URL, json=dados, headers=headers)
+        
+        if resp.status_code in [200, 201]:
+            st.success("✅ ALERTA ENVIADO! A Central foi notificada!")
+            st.balloons()
+        else:
+            st.error(f"❌ Erro: {resp.status_code} — {resp.text}")
 
-st.divider()
-st.caption("GECOM Seguranca — Protecao Maxima · Emergencia: 190")
+st.caption("GECOM Segurança — Proteção Máxima · Emergência: 190")
