@@ -54,7 +54,7 @@ st.divider()
 
 # === BOTÃO GPS — IGUAL AO SEU ===
 if not lat or not lon:
-    st.markdown("<h3>📍 Capturar Localização</h3>", unsafe_allow_html=True)
+    st.markdown("<h3>CLICK AQUI</h3>", unsafe_allow_html=True)
     
     st.components.v1.html("""
     <div style="margin: 10px 0 20px 0;">
