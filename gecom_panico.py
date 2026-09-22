@@ -53,44 +53,45 @@ st.markdown("""
 <hr style='border: 1px solid #ddd; margin: 20px 0;'>
 """, unsafe_allow_html=True)
 
-# === BOTÃO GPS — PREENCHE NA HORA ===
+# === SE NÃO TEM GPS → MOSTRA BOTÃO ===
 if not lat or not lon:
     st.info("📌 Clique para capturar sua localização:")
     
-    st.components.v1.html(f"""
+    st.components.v1.html("""
 <button onclick="capturarGPS()" style="width:100%; padding:18px; font-size:20px; background:#ff3333; color:white; border:none; border-radius:12px; cursor:pointer; font-weight:bold;">
 📍 CAPTURAR MINHA LOCALIZAÇÃO
 </button>
 <p id="status" style="margin-top:15px; color:#555; text-align:center;"></p>
 
 <script>
-function capturarGPS() {{
+function capturarGPS() {
     const status = document.getElementById("status");
     status.textContent = "🔄 Buscando...";
     
     navigator.geolocation.getCurrentPosition(
-        function(sucesso) {{
-            // Recarrega a página com os valores
+        function(sucesso) {
             window.location.href = 
                 window.location.origin + 
                 window.location.pathname + 
                 "?lat=" + sucesso.coords.latitude + 
                 "&lon=" + sucesso.coords.longitude;
-        }},
-        function(erro) {{
+        },
+        function(erro) {
             status.textContent = "⚠️ Preencha manualmente abaixo";
-        }},
-        {{enableHighAccuracy: true, timeout: 15000}}
+        },
+        {enableHighAccuracy: true, timeout: 15000}
     );
-}}
+}
 </script>
 """, height=200)
+
+# === SE TEM GPS → MOSTRA SÓ FORMULÁRIO, SEM BOTÃO/AVISO ===
 else:
-    st.success("✅ Localização capturada! Campos preenchidos:")
+    st.success("✅ Localização capturada!")
 
 st.divider()
 
-# === FORMULÁRIO — OS VALORES JÁ VÃO AQUI ===
+# === FORMULÁRIO SEMPRE APARECE — SEM TEXTOS EXTRAS ===
 with st.form("alerta"):
     nome = st.text_input("👤 Seu Nome / Razão Social")
     
