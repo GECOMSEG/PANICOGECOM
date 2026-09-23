@@ -1,7 +1,6 @@
 import streamlit as st
 import requests
-from datetime import datetime
-import pytz  # ✅ Adicionado
+from datetime import datetime, timedelta, timezone
 
 st.set_page_config(
     page_title="GECOM — Pânico",
@@ -19,8 +18,8 @@ headers = {
     "Content-Type": "application/json"
 }
 
-# Fuso horário fixo — Horário de Brasília
-FUSO_HORARIO = pytz.timezone('America/Sao_Paulo')
+# ✅ Fuso Horário de Brasília (-3h) — SEM precisar instalar nada!
+fuso_brasil = timezone(timedelta(hours=-3))
 
 st.components.v1.html("""
 <meta name="theme-color" content="#ff0000">
@@ -83,7 +82,7 @@ if not lat or not lon:
         navigator.geolocation.getCurrentPosition(
             function(sucesso) {
                 window.location.href = window.location.origin + window.location.pathname + 
-                    "?nome=gecom_panico.py" +
+                    "?nome=CLIENTE-GECOM" +
                     "&lat=" + sucesso.coords.latitude + 
                     "&lon=" + sucesso.coords.longitude;
             },
@@ -105,10 +104,12 @@ if not lat or not lon:
 st.success("✅ Localização recebida! Enviando alerta...")
 mapa_link = f"https://www.google.com/maps/search/?api=1&query={lat},{lon}"
 
-# ✅ HORA CORRIGIDA — Horário de Brasília
+# ✅ HORA CERTA — Horário de Brasília
+hora_certa = datetime.now(fuso_brasil).strftime("%d/%m/%Y %H:%M:%S")
+
 dados = {
     "nome": nome,
-    "hora": datetime.now(FUSO_HORARIO).strftime("%d/%m/%Y %H:%M:%S"),
+    "hora": hora_certa,
     "lat": lat,
     "lon": lon,
     "endereco": endereco,
@@ -130,11 +131,11 @@ if resp.status_code in [200, 201]:
         margin:20px 0;
     '>
         <h2 style='font-size:30px;margin:0;'>✅ ALERTA ENVIADO!</h2>
-        <p style='font-size:20px;margin:20px 0 0;'>A central foi notificada<br>Ajuda a caminho</p>
+        <p style='font-size:20px;margin:20px 0 0;'>A central foi notificada às {hora_certa}<br>Ajuda a caminho</p>
     </div>
     <div style='background:#f5f5f5;padding:20px;border-radius:12px;margin-top:20px;'>
         <strong>👤 Nome:</strong> {nome}<br><br>
-        <strong>🕐 Hora:</strong> {dados['hora']}<br><br>
+        <strong>🕐 Hora:</strong> {hora_certa}<br><br>
         <strong>📍 Localização:</strong><br>{endereco}<br><br>
         <a href="{mapa_link}" target="_blank" style="font-size:18px;color:#ff0000;font-weight:bold;">🔗 Ver no Mapa</a>
     </div>
@@ -147,7 +148,7 @@ else:
         st.markdown(f"""
         <div style='background:linear-gradient(135deg,#ff0000,#880000);color:white;padding:40px 20px;border-radius:20px;text-align:center;'>
             <h2>✅ ALERTA ENVIADO!</h2>
-            <p>Central notificada às {dados['hora']}</p>
+            <p>Central notificada às {hora_certa}</p>
         </div>
         """, unsafe_allow_html=True)
         st.markdown(f"🔗 [Ver no Mapa]({mapa_link})")
