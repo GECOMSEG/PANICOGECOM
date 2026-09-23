@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 from datetime import datetime
+import pytz  # ✅ Adicionado
 
 st.set_page_config(
     page_title="GECOM — Pânico",
@@ -18,9 +19,11 @@ headers = {
     "Content-Type": "application/json"
 }
 
-# === TELA CHEIA — SEM ELEMENTOS EXTRAS ===
+# Fuso horário fixo — Horário de Brasília
+FUSO_HORARIO = pytz.timezone('America/Sao_Paulo')
+
 st.components.v1.html("""
-<meta name="theme-color" content="#FF0000">
+<meta name="theme-color" content="#ff0000">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
@@ -30,7 +33,6 @@ h1 { font-size: 34px !important; }
 </style>
 """, height=0)
 
-# === PEGAR DADOS SE JÁ VIERAM ===
 lat = st.query_params.get("lat", "")
 lon = st.query_params.get("lon", "")
 nome = st.query_params.get("nome", "CLIENTE GECOM")
@@ -46,20 +48,15 @@ if lat and lon:
     except:
         endereco = f"{lat}, {lon}"
 
-# ==================================================
-# TELA PRINCIPAL — UM SÓ BOTÃO GRANDE E VERMELHO
-# ==================================================
 if not lat or not lon:
     st.markdown("""
     <h1 style='text-align:center;color:red;margin-bottom:5px;'>🚨 GECOM SEGURANÇA</h1>
     <h2 style='text-align:center;font-size:22px;color:#444;margin:0 0 40px;'>BOTÃO DE PÂNICO</h2>
-    
     <p style='text-align:center;font-size:20px;color:#333;margin-bottom:40px;'>
     Toque abaixo <strong>uma vez</strong> — enviamos sua localização e alerta à central
     </p>
     """, unsafe_allow_html=True)
 
-    # === O ÚNICO BOTÃO — FAZ TUDO ===
     st.components.v1.html("""
     <div style="display:flex;justify-content:center;margin:20px 0 40px;">
         <button onclick="acionarPanico()" style="
@@ -77,7 +74,6 @@ if not lat or not lon:
         🚨 PÂNICO — EMERGÊNCIA
         </button>
     </div>
-
     <script>
     function acionarPanico() {
         if (!navigator.geolocation) {
@@ -86,9 +82,8 @@ if not lat or not lon:
         }
         navigator.geolocation.getCurrentPosition(
             function(sucesso) {
-                // Pega localização → recarrega → já envia tudo
                 window.location.href = window.location.origin + window.location.pathname + 
-                    "?nome=CLIENTE+GECOM" +
+                    "?nome=LUCIANA-SANTOS.py" +
                     "&lat=" + sucesso.coords.latitude + 
                     "&lon=" + sucesso.coords.longitude;
             },
@@ -107,17 +102,13 @@ if not lat or not lon:
     st.info("💡 Toque uma vez → permita → a página recarrega sozinha")
     st.stop()
 
-# ==================================================
-# JÁ TEM LOCALIZAÇÃO → ENVIA DIRETO AO BANCO
-# ==================================================
 st.success("✅ Localização recebida! Enviando alerta...")
-
 mapa_link = f"https://www.google.com/maps/search/?api=1&query={lat},{lon}"
 
-# Tenta sem acento primeiro
+# ✅ HORA CORRIGIDA — Horário de Brasília
 dados = {
     "nome": nome,
-    "hora": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+    "hora": datetime.now(FUSO_HORARIO).strftime("%d/%m/%Y %H:%M:%S"),
     "lat": lat,
     "lon": lon,
     "endereco": endereco,
@@ -141,15 +132,14 @@ if resp.status_code in [200, 201]:
         <h2 style='font-size:30px;margin:0;'>✅ ALERTA ENVIADO!</h2>
         <p style='font-size:20px;margin:20px 0 0;'>A central foi notificada<br>Ajuda a caminho</p>
     </div>
-    
     <div style='background:#f5f5f5;padding:20px;border-radius:12px;margin-top:20px;'>
         <strong>👤 Nome:</strong> {nome}<br><br>
+        <strong>🕐 Hora:</strong> {dados['hora']}<br><br>
         <strong>📍 Localização:</strong><br>{endereco}<br><br>
         <a href="{mapa_link}" target="_blank" style="font-size:18px;color:#ff0000;font-weight:bold;">🔗 Ver no Mapa</a>
     </div>
     """, unsafe_allow_html=True)
 else:
-    # Tenta com acento se precisar
     dados["endereço"] = dados.pop("endereco")
     resp2 = requests.post(API_URL, json=dados, headers=headers)
     if resp2.status_code in [200, 201]:
@@ -157,7 +147,7 @@ else:
         st.markdown(f"""
         <div style='background:linear-gradient(135deg,#ff0000,#880000);color:white;padding:40px 20px;border-radius:20px;text-align:center;'>
             <h2>✅ ALERTA ENVIADO!</h2>
-            <p>Central notificada</p>
+            <p>Central notificada às {dados['hora']}</p>
         </div>
         """, unsafe_allow_html=True)
         st.markdown(f"🔗 [Ver no Mapa]({mapa_link})")
@@ -165,5 +155,5 @@ else:
         st.error(f"❌ Erro: {resp.text[:250]}")
 
 st.divider()
-st.caption("GECOM Segurança · Emergência: 190")
+st.caption("GECOM SEGURANÇA · PROTEÇÃO MÁXIMA · EMERGÊNCIA: (51)99846.3372")
     
