@@ -83,7 +83,7 @@ if not lat or not lon:
         navigator.geolocation.getCurrentPosition(
             function(sucesso) {
                 window.location.href = window.location.origin + window.location.pathname + 
-                    "?nome=LUCIANA-SANTOS.py" +
+                    "?nome=gecom_panico.py" +
                     "&lat=" + sucesso.coords.latitude + 
                     "&lon=" + sucesso.coords.longitude;
             },
